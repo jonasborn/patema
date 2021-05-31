@@ -101,23 +101,29 @@ class FTPFileSystem implements IFileSystem<FTPElement> {
 
     @Override
     FTPElement findFile(String path) throws IOException {
+        if (path.endsWith("/")) path = path.substring(0, path.length() -1)
+        path = path.replaceAll("/{2,}", "/")
         return factory.find(path)
     }
 
     @Override
     FTPElement findFile(FTPElement cwd, String path) throws IOException {
-        println "CWD: " + cwd + ", PTH: " + path + ", FFI: " + findFile(cwd.path + path)
-        return findFile(cwd.path + path)
+        println "CWD: " + cwd + ", PTH: " + path + ", FFI: " + findFile(cwd.path + "/" + path)
+        return findFile(cwd.path + "/" +  path)
     }
 
     @Override
     InputStream readFile(FTPElement file, long start) throws IOException {
-        return null
+        println "READ"
+        if (file.isProjectFile()) return file.asProjectFile().read(start)
+        throw new IOException("File access not allowed")
     }
 
     @Override
     OutputStream writeFile(FTPElement file, long start) throws IOException {
-        return null
+        println "WRITE: " + file
+        if (file.isProjectFile()) return file.asProjectFile().write(start)
+        throw new IOException("File access not allowed")
     }
 
     @Override

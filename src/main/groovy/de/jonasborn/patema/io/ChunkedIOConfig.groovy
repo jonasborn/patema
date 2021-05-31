@@ -19,8 +19,8 @@ package de.jonasborn.patema.io
 
 class ChunkedIOConfig {
 
-    boolean compress = true;
-    boolean encrypt = false;
+    boolean compress = true ;
+    boolean encrypt = true;
     String password;
 
     ChunkedIOConfig(String password) {

@@ -41,6 +41,7 @@ class ChunkedIO {
     }
 
     public byte[] encode(byte[] data) {
+        if (!config.compress && !config.encrypt) return data
         def bout = new ByteArrayOutputStream()
         def out = new XZOutputStream(bout, new LZMA2Options())
         out.write(data)
@@ -51,6 +52,7 @@ class ChunkedIO {
     }
 
     public byte[] decode(byte[] data) {
+        if (!config.compress && !config.encrypt) return data
         def dec = alice.decrypt(data, config.password.toCharArray())
         def bin = new ByteArrayInputStream(dec)
         def xin = new XZInputStream(bin)

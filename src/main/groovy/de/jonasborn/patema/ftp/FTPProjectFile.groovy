@@ -17,12 +17,22 @@
 
 package de.jonasborn.patema.ftp
 
+import de.jonasborn.patema.io.ChunkedFile
+import de.jonasborn.patema.io.ChunkedIOConfig
+import de.jonasborn.patema.io.ChunkedInputStream
+import de.jonasborn.patema.io.ChunkedOutputStream
+
 class FTPProjectFile extends FTPElement {
 
     File delegate;
     FTPProject project;
     String title;
 
+    ChunkedFile chunkedFile;
+
+    ChunkedOutputStream cout
+
+    ChunkedInputStream cin;
 
     FTPProjectFile(FTPProject project, String title) {
         super(Type.PROJECT_FILE)
@@ -47,6 +57,32 @@ class FTPProjectFile extends FTPElement {
     }
 
     public long getSize() {
-        delegate.size()
+
+        prepare()
+
+        return chunkedFile.getSize();
+    }
+
+    private void prepare() {
+        if (chunkedFile == null) {
+            if (!delegate.exists()) delegate.mkdir()
+            def config = new ChunkedIOConfig("hallo")
+            chunkedFile = new ChunkedFile(config, delegate)
+            cin = new ChunkedInputStream(chunkedFile)
+            cout = new ChunkedOutputStream(chunkedFile)
+        }
+    }
+
+    public ChunkedInputStream read(long start) {
+        prepare()
+        cin.seek(start)
+        return cin
+    }
+
+    public ChunkedOutputStream write( long start) {
+        prepare()
+        println "STA: " + start
+        cout.seek(start)
+        return cout
     }
 }
