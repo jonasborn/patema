@@ -47,6 +47,10 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
         new File(root.delegate, name).exists()
     }
 
+    public void mkdir() {
+        new File(root.delegate, name).mkdir()
+    }
+
     @Override
     FTPElement getParent() {
         return root
@@ -73,7 +77,7 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
     }
 
     public List<FTPProjectFile> list() {
-        if (!delegate.exists()) throw new IOException("Unable to find project " + delegate.path)
+        if (!delegate.exists()) return []
         delegate.listFiles().collect {
             return new FTPProjectFile(this, it.name)
         }

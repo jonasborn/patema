@@ -131,7 +131,8 @@ class FTPFileSystem implements IFileSystem<FTPElement> {
 
     @Override
     void mkdirs(FTPElement file) throws IOException {
-        println file.path
+        if (file.isProject()) file.asProject().mkdir()
+        else throw new IOException("Only projects are allowed")
     }
 
     @Override

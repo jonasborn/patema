@@ -57,6 +57,7 @@ class FTPFileFactory {
         if (parts.length == 2) {
             if (parts[1].startsWith("project")) return project(parts[1])
             if (parts[1].startsWith("tape")) return tape(parts[1])
+            return project("project-" + parts[1])
         }
 
         if (parts.length == 3) {
