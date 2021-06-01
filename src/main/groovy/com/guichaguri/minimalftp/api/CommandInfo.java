@@ -33,25 +33,6 @@ public class CommandInfo {
         this.needsAuth = needsAuth;
     }
 
-    /**
-     * Represents a command
-     */
-    @FunctionalInterface
-    public interface Command {
-
-        /**
-         * Runs a command that accepts all arguments
-         * @param argument The argument
-         * @throws IOException When an error occurs
-         */
-        void run(String argument) throws IOException;
-
-        default void run(CommandInfo info, String argument) throws IOException {
-            if(argument.isEmpty()) throw new ResponseException(501, "Missing parameters");
-
-            run(argument);
-        }
-    }
 
     /**
      * Represents a command with no arguments
@@ -61,6 +42,7 @@ public class CommandInfo {
 
         /**
          * Runs a command that doesn't accept arguments
+         *
          * @throws IOException When an error occurs
          */
         void run() throws IOException;
@@ -70,10 +52,6 @@ public class CommandInfo {
             run();
         }
 
-        @Override
-        default void run(CommandInfo info, String argument) throws IOException {
-            run();
-        }
 
     }
 
@@ -85,6 +63,7 @@ public class CommandInfo {
 
         /**
          * Runs a command that accepts only a single argument
+         *
          * @param argument An array of arguments
          * @throws IOException When an error occurs
          */
@@ -95,10 +74,6 @@ public class CommandInfo {
             run(argument.split("\\s+"));
         }
 
-        @Override
-        default void run(CommandInfo info, String argument) throws IOException {
-            run(argument.split("\\s+"));
-        }
 
     }
 }

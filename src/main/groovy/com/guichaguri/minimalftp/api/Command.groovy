@@ -15,40 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.ftp
+package com.guichaguri.minimalftp.api
+/**
+ * Represents a command
+ */
+@FunctionalInterface
+public interface Command {
 
-class FTPTapeFile extends FTPElement {
+    /**
+     * Runs a command that accepts all arguments
+     * @param argument The argument
+     * @throws IOException When an error occurs
+     */
+    void run(String argument) throws IOException;
 
-    FTPTape tape;
-    String title
 
-    FTPTapeFile(FTPTape tape, String title) {
-        super(Type.TAPE_FILE)
-        this.tape = tape
-        this.title = title
-    }
-
-    @Override
-    String getPath() {
-        return tape.getPath() + "/" + title
-    }
-
-    @Override
-    boolean exists() {
-        return false
-    }
-
-    @Override
-    FTPElement getParent() {
-        return tape
-    }
-
-    @Override
-    void delete() {
-
-    }
-
-    long getSize() {
-        return 0
-    }
 }

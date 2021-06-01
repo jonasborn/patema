@@ -18,18 +18,19 @@
 package de.jonasborn.patema.ftp
 
 import com.guichaguri.minimalftp.FTPConnection
+import com.guichaguri.minimalftp.api.CmdResponse
+import com.guichaguri.minimalftp.api.Command
+import com.guichaguri.minimalftp.api.CommandInfo
 import com.guichaguri.minimalftp.api.IFileSystem
 import com.guichaguri.minimalftp.api.IUserAuthenticator
 
 class FTPAuth implements IUserAuthenticator{
 
-    FTPFileSystem fileSystem;
+    File directory
 
-    FTPAuth(FTPFileSystem fileSystem) {
-        this.fileSystem = fileSystem
+    FTPAuth(File directory) {
+        this.directory = directory
     }
-
-
 
     @Override
     boolean needsUsername(FTPConnection con) {
@@ -43,6 +44,28 @@ class FTPAuth implements IUserAuthenticator{
 
     @Override
     IFileSystem authenticate(FTPConnection con, InetAddress host, String username, String password) throws IUserAuthenticator.AuthException {
-        return fileSystem;
+        FTPConfig config = new FTPConfig(username, password)
+        con.registerCmd("ENCRYPT", "encryption <on/off>", {
+            if (it.args == "on") config.encrypt = true
+            if (it.args == "off") config.encrypt = false
+            return new CmdResponse(200,  "Encryption is " + ((config.encrypt) ? "on" : "off"))
+        })
+        con.registerCmd("COMPRESS", "COMPRESS <on/off>", {
+            if (it.args == "on") config.compress = true
+            if (it.args == "off") config.compress = false
+            return new CmdResponse(200,  "Compression is " + ((config.compress) ? "on" : "off"))
+        })
+        con.registerCmd("BLOCKSIZE", "BLOCKSIZE <(int)>", {
+            if (it.args == "") return new CmdResponse(200, "Block size is " + config.blockSize)
+            try {
+                config.blockSize = Integer.parseInt(it.args)
+                return new CmdResponse(200, "Block size is " + config.blockSize)
+            } catch (Exception e) {
+                e.printStackTrace()
+                return new CmdResponse(500, "Not a valid value")
+            }
+        })
+
+        return new FTPFileSystem(config, directory)
     }
 }

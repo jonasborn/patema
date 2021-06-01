@@ -19,12 +19,15 @@
 package de.jonasborn.patema.ftp
 
 import com.guichaguri.minimalftp.api.IFileSystem
+import de.jonasborn.patema.io.ChunkedFileConfig
 
 class FTPFileSystem implements IFileSystem<FTPElement> {
 
+    FTPConfig config
     FTPFileFactory factory;
 
-    FTPFileSystem(File directory) {
+    FTPFileSystem(FTPConfig config, File directory) {
+        this.config = config
         factory = new FTPFileFactory(directory)
     }
 
@@ -101,7 +104,7 @@ class FTPFileSystem implements IFileSystem<FTPElement> {
 
     @Override
     FTPElement findFile(String path) throws IOException {
-        if (path.endsWith("/")) path = path.substring(0, path.length() -1)
+        if (path.endsWith("/")) path = path.substring(0, path.length() - 1)
         path = path.replaceAll("/{2,}", "/")
         return factory.find(path)
     }
@@ -109,20 +112,20 @@ class FTPFileSystem implements IFileSystem<FTPElement> {
     @Override
     FTPElement findFile(FTPElement cwd, String path) throws IOException {
         println "CWD: " + cwd + ", PTH: " + path + ", FFI: " + findFile(cwd.path + "/" + path)
-        return findFile(cwd.path + "/" +  path)
+        return findFile(cwd.path + "/" + path)
     }
 
     @Override
     InputStream readFile(FTPElement file, long start) throws IOException {
         println "READ"
-        if (file.isProjectFile()) return file.asProjectFile().read(start)
+        if (file.isProjectFile()) return file.asProjectFile().read(config, start)
         throw new IOException("File access not allowed")
     }
 
     @Override
     OutputStream writeFile(FTPElement file, long start) throws IOException {
         println "WRITE: " + file
-        if (file.isProjectFile()) return file.asProjectFile().write(start)
+        if (file.isProjectFile()) return file.asProjectFile().write(config, start)
         throw new IOException("File access not allowed")
     }
 
@@ -133,7 +136,7 @@ class FTPFileSystem implements IFileSystem<FTPElement> {
 
     @Override
     void delete(FTPElement file) throws IOException {
-
+        file.delete()
     }
 
     @Override

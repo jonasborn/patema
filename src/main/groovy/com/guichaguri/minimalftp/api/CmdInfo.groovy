@@ -15,15 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.io
+package com.guichaguri.minimalftp.api
 
-class ChunkedIOConfig {
+class CmdInfo {
 
-    boolean compress = true ;
-    boolean encrypt = true;
-    String password;
+    Cmd cmd;
+    String help
 
-    ChunkedIOConfig(String password) {
-        this.password = password
+    CmdInfo(Cmd cmd, String help) {
+        this.cmd = cmd
+        this.help = help
     }
 }

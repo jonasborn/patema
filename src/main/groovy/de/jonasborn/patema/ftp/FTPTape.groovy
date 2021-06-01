@@ -49,6 +49,11 @@ public   class FTPTape extends FTPDirectory<FTPTapeFile> {
         return "tape-" +  device.split("/").last()
     }
 
+    @Override
+    void delete() {
+
+    }
+
     public List<FTPTapeFile> list() {
         return [
                 new FTPTapeFile(this, "a"),

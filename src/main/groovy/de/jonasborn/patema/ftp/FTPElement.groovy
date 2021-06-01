@@ -37,6 +37,8 @@ abstract class FTPElement {
 
     abstract String getTitle()
 
+    abstract void delete()
+
     boolean isFile() {
         return type == PROJECT_FILE || type == TAPE_FILE
     }

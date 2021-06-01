@@ -48,6 +48,11 @@ public class FTPRoot extends FTPDirectory<FTPElement> {
     }
 
     @Override
+    void delete() {
+
+    }
+
+    @Override
     List<FTPElement> list() {
         def list = []
         list.addAll delegate.listFiles().findAll {it.isDirectory()}.collect() {

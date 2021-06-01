@@ -26,8 +26,7 @@ class Main {
     public static void main(String[] args) {
 
         File root = new File("root");
-        def  fs = new FTPFileSystem(root);
-        def auth = new FTPAuth(fs);
+        def auth = new FTPAuth(root);
         FTPServer server = new FTPServer(auth);
         server.listenSync(21);
 

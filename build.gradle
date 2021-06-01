@@ -27,6 +27,7 @@ dependencies {
     compile group: 'net.sf.sevenzipjbinding', name: 'sevenzipjbinding', version: '16.02-2.01'
     compile group: 'com.github.rockaport', name: 'alice', version: '0.9.0'
     compile group: 'org.tukaani', name: 'xz', version: '1.9'
+    compile group: 'com.esotericsoftware', name: 'kryo', version: '5.1.1'
     compile 'org.codehaus.groovy:groovy-all:2.3.11'
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }

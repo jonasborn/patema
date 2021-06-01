@@ -18,20 +18,26 @@
 package de.jonasborn.patema.ftp
 
 import de.jonasborn.patema.io.ChunkedFile
-import de.jonasborn.patema.io.ChunkedIOConfig
+import de.jonasborn.patema.io.ChunkedFileConfig
 import de.jonasborn.patema.io.ChunkedInputStream
 import de.jonasborn.patema.io.ChunkedOutputStream
 
 class FTPProjectFile extends FTPElement {
 
+    private static ChunkedFileConfig createConfig(FTPConfig config) {
+        def c = new ChunkedFileConfig(config.password)
+        c.blockSize = config.blockSize
+        c.compress = config.compress
+        c.encrypt = config.encrypt
+        c.annoying = config.annoying
+        return c
+    }
+
     File delegate;
     FTPProject project;
     String title;
-
     ChunkedFile chunkedFile;
-
     ChunkedOutputStream cout
-
     ChunkedInputStream cin;
 
     FTPProjectFile(FTPProject project, String title) {
@@ -56,6 +62,12 @@ class FTPProjectFile extends FTPElement {
         return project
     }
 
+    @Override
+    void delete() {
+        println "DELE"
+        println delegate.deleteDir()
+    }
+
     public long getSize() {
 
         prepare()
@@ -63,25 +75,26 @@ class FTPProjectFile extends FTPElement {
         return chunkedFile.getSize();
     }
 
-    private void prepare() {
+    private void prepare(FTPConfig config) {
         if (chunkedFile == null) {
             if (!delegate.exists()) delegate.mkdir()
-            def config = new ChunkedIOConfig("hallo")
-            chunkedFile = new ChunkedFile(config, delegate)
+            def c = createConfig(config)
+            chunkedFile = new ChunkedFile(c, delegate)
             cin = new ChunkedInputStream(chunkedFile)
             cout = new ChunkedOutputStream(chunkedFile)
+        } else {
+            chunkedFile.config = createConfig(config)
         }
     }
 
-    public ChunkedInputStream read(long start) {
-        prepare()
+    public ChunkedInputStream read(FTPConfig config, long start) {
+        prepare(config)
         cin.seek(start)
         return cin
     }
 
-    public ChunkedOutputStream write( long start) {
-        prepare()
-        println "STA: " + start
+    public ChunkedOutputStream write(FTPConfig config, long start) {
+        prepare(config)
         cout.seek(start)
         return cout
     }

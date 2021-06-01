@@ -57,6 +57,15 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
         return name
     }
 
+    @Override
+    void delete() {
+        def files = delegate.listFiles()
+        if (files != null) files.each {
+            it.delete()
+        }
+        delegate.deleteDir()
+    }
+
     public List<FTPProjectFile> list() {
         if (!delegate.exists()) throw new IOException("Unable to find project " + delegate.path)
         delegate.listFiles().collect {

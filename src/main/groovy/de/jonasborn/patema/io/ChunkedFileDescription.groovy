@@ -17,9 +17,17 @@
 
 package de.jonasborn.patema.io
 
+import com.esotericsoftware.kryo.Kryo
+
 import java.nio.ByteBuffer
 
 class ChunkedFileDescription {
+
+    static Kryo kryo
+
+    static {
+
+    }
 
     public static byte[] pack(ChunkedFileDescription description) {
         def nameBytes = description.name.getBytes("UTF-8")

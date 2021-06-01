@@ -15,40 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.ftp
+package com.guichaguri.minimalftp.api;
 
-class FTPTapeFile extends FTPElement {
+import java.io.IOException;
 
-    FTPTape tape;
-    String title
+public interface Cmd {
 
-    FTPTapeFile(FTPTape tape, String title) {
-        super(Type.TAPE_FILE)
-        this.tape = tape
-        this.title = title
-    }
+    CmdResponse run(CmdRequest request) throws IOException;
 
-    @Override
-    String getPath() {
-        return tape.getPath() + "/" + title
-    }
-
-    @Override
-    boolean exists() {
-        return false
-    }
-
-    @Override
-    FTPElement getParent() {
-        return tape
-    }
-
-    @Override
-    void delete() {
-
-    }
-
-    long getSize() {
-        return 0
-    }
 }

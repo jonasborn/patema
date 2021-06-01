@@ -16,13 +16,9 @@
 
 package com.guichaguri.minimalftp;
 
-import com.guichaguri.minimalftp.api.CommandInfo;
+import com.guichaguri.minimalftp.api.*;
 import com.guichaguri.minimalftp.api.CommandInfo.ArgsArrayCommand;
-import com.guichaguri.minimalftp.api.CommandInfo.Command;
 import com.guichaguri.minimalftp.api.CommandInfo.NoArgsCommand;
-import com.guichaguri.minimalftp.api.IFileSystem;
-import com.guichaguri.minimalftp.api.IUserAuthenticator;
-import com.guichaguri.minimalftp.api.ResponseException;
 import com.guichaguri.minimalftp.handler.ConnectionHandler;
 import com.guichaguri.minimalftp.handler.FileHandler;
 import java.io.*;
@@ -46,6 +42,7 @@ import javax.net.ssl.SSLSocketFactory;
 public class FTPConnection implements Closeable {
 
     protected final Map<String, CommandInfo> commands = new HashMap<>();
+    protected final Map<String, CmdInfo> cmds = new HashMap<>();
     protected final Map<String, CommandInfo> siteCommands = new HashMap<>();
     protected final List<String> features = new ArrayList<>();
     protected final Map<String, String> options = new HashMap<>();
@@ -423,6 +420,10 @@ public class FTPConnection implements Closeable {
         commands.put(label.toUpperCase(), new CommandInfo(cmd, help, needsAuth));
     }
 
+    public void registerCmd(String command, String help, Cmd cmd) {
+        cmds.put(command.toUpperCase(), new CmdInfo(cmd, help));
+    }
+
     /**
      * Gets the help message from a SITE command
      * @param label The command name
@@ -440,7 +441,10 @@ public class FTPConnection implements Closeable {
      */
     public String getHelpMessage(String label) {
         CommandInfo info = commands.get(label);
-        return info != null ? info.help : null;
+        if (info != null) return info.help;
+        CmdInfo cmdInfo = cmds.get(label);
+        if (cmdInfo != null) return cmdInfo.getHelp();
+        return null;
     }
 
     protected void onUpdate() {
@@ -449,20 +453,27 @@ public class FTPConnection implements Closeable {
 
     /**
      * Processes commands
-     * @param cmd The command and its arguments
+     * @param command The command and its arguments
      */
-    protected void process(String cmd) {
-        int firstSpace = cmd.indexOf(' ');
-        if(firstSpace < 0) firstSpace = cmd.length();
+    protected void process(String command) {
+        int firstSpace = command.indexOf(' ');
+        if(firstSpace < 0) firstSpace = command.length();
 
-        CommandInfo info = commands.get(cmd.substring(0, firstSpace).toUpperCase());
+        String identifier = command.substring(0, firstSpace).toUpperCase();
+        CommandInfo info = commands.get(identifier);
+        CmdInfo cmdInfo = cmds.get(identifier);
 
-        if(info == null) {
+        if(info == null && cmdInfo == null) {
             sendResponse(502, "Unknown command");
             return;
         }
 
-        processCommand(info, firstSpace != cmd.length() ? cmd.substring(firstSpace + 1) : "");
+        String args =  firstSpace != command.length() ? command.substring(firstSpace + 1) : "";
+
+        if (info != null)
+        processCommand(info, args);
+        if (cmdInfo != null)
+            processCmd(cmdInfo.getCmd(), identifier, args);
     }
 
     /**
@@ -520,6 +531,30 @@ public class FTPConnection implements Closeable {
         }
     }
 
+    protected void processCmd(Cmd cmd, String command, String args) {
+        responseSent = false;
+        try {
+            CmdRequest request = new CmdRequest(
+                    conHandler.isAuthenticated(),
+                    command,
+                    args
+            );
+            CmdResponse response = cmd.run(request);
+            if (response != null) sendResponse(response.getStatus(), response.getMessage());
+        } catch(ResponseException ex) {
+            sendResponse(ex.getCode(), ex.getMessage());
+        } catch(FileNotFoundException ex) {
+            sendResponse(550, ex.getMessage());
+        } catch(IOException ex) {
+            sendResponse(450, ex.getMessage());
+        } catch(Exception ex) {
+            sendResponse(451, ex.getMessage());
+            ex.printStackTrace();
+        }
+
+        if(!responseSent) sendResponse(200, "Done");
+    }
+
     protected void processCommand(CommandInfo info, String args) {
         if(info.needsAuth && !conHandler.isAuthenticated()) {
             sendResponse(530, "Needs authentication");
@@ -529,7 +564,7 @@ public class FTPConnection implements Closeable {
         responseSent = false;
 
         try {
-            info.command.run(info, args);
+            info.command.run(args);
         } catch(ResponseException ex) {
             sendResponse(ex.getCode(), ex.getMessage());
         } catch(FileNotFoundException ex) {

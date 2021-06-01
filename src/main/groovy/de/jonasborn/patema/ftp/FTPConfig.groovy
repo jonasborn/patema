@@ -17,38 +17,17 @@
 
 package de.jonasborn.patema.ftp
 
-class FTPTapeFile extends FTPElement {
+class FTPConfig {
 
-    FTPTape tape;
-    String title
+    String username
+    String password
+    boolean encrypt = true
+    boolean compress = true
+    boolean annoying = false
+    int blockSize = 1024*1024
 
-    FTPTapeFile(FTPTape tape, String title) {
-        super(Type.TAPE_FILE)
-        this.tape = tape
-        this.title = title
-    }
-
-    @Override
-    String getPath() {
-        return tape.getPath() + "/" + title
-    }
-
-    @Override
-    boolean exists() {
-        return false
-    }
-
-    @Override
-    FTPElement getParent() {
-        return tape
-    }
-
-    @Override
-    void delete() {
-
-    }
-
-    long getSize() {
-        return 0
+    FTPConfig(String username, String password) {
+        this.username = username
+        this.password = password
     }
 }

@@ -15,40 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.ftp
+package com.guichaguri.minimalftp.api
 
-class FTPTapeFile extends FTPElement {
+class CmdRequest {
 
-    FTPTape tape;
-    String title
+    boolean isAuthenticated
+    String command
+    String args
 
-    FTPTapeFile(FTPTape tape, String title) {
-        super(Type.TAPE_FILE)
-        this.tape = tape
-        this.title = title
-    }
-
-    @Override
-    String getPath() {
-        return tape.getPath() + "/" + title
-    }
-
-    @Override
-    boolean exists() {
-        return false
-    }
-
-    @Override
-    FTPElement getParent() {
-        return tape
-    }
-
-    @Override
-    void delete() {
-
-    }
-
-    long getSize() {
-        return 0
+    CmdRequest(boolean isAuthenticated, String command, String args) {
+        this.isAuthenticated = isAuthenticated
+        this.command = command
+        this.args = args
     }
 }
