@@ -33,6 +33,8 @@ class ChunkedFile {
     }
 
     ChunkedFile(ChunkedFileConfig config, File directory) {
+        assert config != null
+        this.config = config
         this.io = new ChunkedIO(config)
         this.directory = directory
         this.description = new File(directory, "description.ptmad")

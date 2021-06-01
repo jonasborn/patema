@@ -17,29 +17,29 @@
 
 package de.jonasborn.patema.ftp
 
+import de.jonasborn.patema.util.FileUtils
+
 import static de.jonasborn.patema.ftp.FTPElement.Type.PROJECT
 
 public class FTPProject extends FTPDirectory<FTPProjectFile> {
 
-    private static String fixName(String input) {
-        return (input.replaceAll("project(-|\\[.*]-)", ""))
-    }
+
 
     File delegate
     FTPRoot root;
     String name
     FTPProject(FTPRoot root, String name) {
         super(PROJECT)
-        println name
         this.root = root
-        this.name = name
-        this.delegate = new File(root.delegate, name)
+        this.name = name.replaceAll("\\[.*\\]", "")
+        this.delegate = new File(root.delegate, this.name)
     }
 
 
     @Override
     String getPath() {
-        return "/" + name
+        println "PATH" + "/" + getTitle()
+        return "/" + getTitle()
     }
 
     @Override
@@ -54,7 +54,13 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
 
     @Override
     String getTitle() {
-        return name
+        return name + "[" + FileUtils.humanReadableByteCountBin(getSize()) + "]"
+    }
+
+    public long getSize() {
+        Long size = list().collect {it.size}.sum() as Long
+        if (size == null) return 0
+        return size
     }
 
     @Override

@@ -20,10 +20,12 @@ package de.jonasborn.patema.ftp
 import static de.jonasborn.patema.ftp.FTPElement.Type.ROOT
 
 public class FTPRoot extends FTPDirectory<FTPElement> {
+    FTPConfig config
     File delegate
-    FTPRoot(File delegate) {
+    FTPRoot(FTPConfig config, File delegate) {
         super(ROOT)
         assert delegate != null
+        this.config = config
         this.delegate = delegate
     }
 

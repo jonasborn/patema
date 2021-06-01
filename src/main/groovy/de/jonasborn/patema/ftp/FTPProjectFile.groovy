@@ -40,11 +40,21 @@ class FTPProjectFile extends FTPElement {
     ChunkedOutputStream cout
     ChunkedInputStream cin;
 
+    /**
+     * Will initialize the underlying chunked file and create
+     * the needed directory if not exists
+     * The underlying chunked file will be initialized using the current
+     * ftp config
+     * @param project
+     * @param title
+     */
     FTPProjectFile(FTPProject project, String title) {
         super(Type.PROJECT_FILE)
         this.title = title
         this.project = project
         this.delegate = new File(project.delegate, title)
+        if (!delegate.exists()) delegate.mkdir()
+        this.chunkedFile = new ChunkedFile(createConfig(project.getRoot().config), delegate)
     }
 
     @Override
@@ -69,32 +79,18 @@ class FTPProjectFile extends FTPElement {
     }
 
     public long getSize() {
-
-        prepare()
-
         return chunkedFile.getSize();
     }
 
-    private void prepare(FTPConfig config) {
-        if (chunkedFile == null) {
-            if (!delegate.exists()) delegate.mkdir()
-            def c = createConfig(config)
-            chunkedFile = new ChunkedFile(c, delegate)
-            cin = new ChunkedInputStream(chunkedFile)
-            cout = new ChunkedOutputStream(chunkedFile)
-        } else {
-            chunkedFile.config = createConfig(config)
-        }
-    }
 
     public ChunkedInputStream read(FTPConfig config, long start) {
-        prepare(config)
+        if (cin == null) cin = new ChunkedInputStream(chunkedFile)
         cin.seek(start)
         return cin
     }
 
     public ChunkedOutputStream write(FTPConfig config, long start) {
-        prepare(config)
+        if (cout == null) cout = new ChunkedOutputStream(chunkedFile)
         cout.seek(start)
         return cout
     }

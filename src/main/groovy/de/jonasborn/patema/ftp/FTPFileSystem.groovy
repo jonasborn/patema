@@ -28,7 +28,7 @@ class FTPFileSystem implements IFileSystem<FTPElement> {
 
     FTPFileSystem(FTPConfig config, File directory) {
         this.config = config
-        factory = new FTPFileFactory(directory)
+        factory = new FTPFileFactory(config, directory)
     }
 
     @Override

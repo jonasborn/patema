@@ -19,14 +19,16 @@ package de.jonasborn.patema.ftp
 
 class FTPFileFactory {
 
+    FTPConfig config;
     File delegate
 
-    FTPFileFactory(File delegate) {
+    FTPFileFactory(FTPConfig config, File delegate) {
         this.delegate = delegate
+        this.config = config
     }
 
     public FTPRoot root() {
-        return new FTPRoot(delegate)
+        return new FTPRoot(config, delegate)
     }
 
     public FTPProject project(String title) {
@@ -34,7 +36,7 @@ class FTPFileFactory {
     }
 
     public FTPTape tape(String path) {
-        return new  FTPTape(root(), path)
+        return new FTPTape(root(), path)
     }
 
     public FTPProjectFile projectFile(FTPProject project, String title) {
@@ -71,10 +73,4 @@ class FTPFileFactory {
 
     }
 
-    public static void main(String[] args) {
-        def f = new FTPFileFactory(new File("root"))
-        def element = f.find("/project/file")
-        println element.path
-
-    }
 }
