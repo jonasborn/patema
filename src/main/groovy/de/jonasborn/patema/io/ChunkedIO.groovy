@@ -52,6 +52,7 @@ class ChunkedIO {
     /*
     Quite ineffective, isn't it?
      */
+
     public char[] getPassword(int index) {
         if (!config.annoying) return config.password.toCharArray()
         def value = keys.get(index)

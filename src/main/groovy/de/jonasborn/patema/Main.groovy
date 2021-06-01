@@ -18,7 +18,6 @@
 package de.jonasborn.patema
 
 import com.guichaguri.minimalftp.FTPServer
-import de.jonasborn.patema.ftp.FTPFileSystem
 import de.jonasborn.patema.ftp.FTPAuth
 
 class Main {

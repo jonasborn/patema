@@ -19,7 +19,6 @@
 package de.jonasborn.patema.ftp
 
 import com.guichaguri.minimalftp.api.IFileSystem
-import de.jonasborn.patema.io.ChunkedFileConfig
 
 class FTPFileSystem implements IFileSystem<FTPElement> {
 

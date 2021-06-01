@@ -19,7 +19,7 @@ package de.jonasborn.patema.ftp
 
 import static de.jonasborn.patema.ftp.FTPElement.Type.TAPE
 
-public   class FTPTape extends FTPDirectory<FTPTapeFile> {
+public class FTPTape extends FTPDirectory<FTPTapeFile> {
     FTPRoot root
     String device
 
@@ -46,7 +46,7 @@ public   class FTPTape extends FTPDirectory<FTPTapeFile> {
 
     @Override
     String getTitle() {
-        return "tape-" +  device.split("/").last()
+        return "tape-" + device.split("/").last()
     }
 
     @Override

@@ -24,7 +24,7 @@ class FTPConfig {
     boolean encrypt = true
     boolean compress = true
     boolean annoying = false
-    int blockSize = 1024*1024
+    int blockSize = 1024 * 1024
 
     FTPConfig(String username, String password) {
         this.username = username

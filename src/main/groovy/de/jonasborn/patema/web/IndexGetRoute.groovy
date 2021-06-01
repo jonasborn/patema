@@ -22,7 +22,7 @@ import spark.Request
 import spark.Response
 import spark.Route
 
-class IndexGetRoute implements Route{
+class IndexGetRoute implements Route {
     @Override
     Object handle(Request request, Response response) throws Exception {
         return Templates.render("web/templates/index.peb", [:])

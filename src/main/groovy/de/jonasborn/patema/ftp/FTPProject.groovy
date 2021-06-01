@@ -24,10 +24,10 @@ import static de.jonasborn.patema.ftp.FTPElement.Type.PROJECT
 public class FTPProject extends FTPDirectory<FTPProjectFile> {
 
 
-
     File delegate
     FTPRoot root;
     String name
+
     FTPProject(FTPRoot root, String name) {
         super(PROJECT)
         this.root = root
@@ -62,7 +62,7 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
     }
 
     public long getSize() {
-        Long size = list().collect {it.size}.sum() as Long
+        Long size = list().collect { it.size }.sum() as Long
         if (size == null) return 0
         return size
     }
@@ -82,7 +82,6 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
             return new FTPProjectFile(this, it.name)
         }
     }
-
 
 
 }

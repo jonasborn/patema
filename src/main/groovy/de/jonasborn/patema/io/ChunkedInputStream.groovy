@@ -17,7 +17,7 @@
 
 package de.jonasborn.patema.io
 
-class ChunkedInputStream extends InputStream{
+class ChunkedInputStream extends InputStream {
 
     ChunkedFile file;
 
@@ -32,15 +32,15 @@ class ChunkedInputStream extends InputStream{
 
     @Override
     int read(byte[] b) throws IOException {
-       try {
-           def temp = file.read(b.length)
-           if (temp == null) return -1
-           System.arraycopy(temp, 0, b, 0, temp.length)
-           return temp.length
-       } catch (Exception e) {
-           e.printStackTrace()
-           throw e
-       }
+        try {
+            def temp = file.read(b.length)
+            if (temp == null) return -1
+            System.arraycopy(temp, 0, b, 0, temp.length)
+            return temp.length
+        } catch (Exception e) {
+            e.printStackTrace()
+            throw e
+        }
     }
 
     @Override
@@ -49,7 +49,7 @@ class ChunkedInputStream extends InputStream{
     }
 
     void seek(long position) {
-         file.seek(position)
+        file.seek(position)
     }
 
     @Override
@@ -57,7 +57,6 @@ class ChunkedInputStream extends InputStream{
         file.skip(n)
         return n
     }
-
 
 
     @Override

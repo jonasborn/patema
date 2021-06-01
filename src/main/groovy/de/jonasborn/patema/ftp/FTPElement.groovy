@@ -110,6 +110,4 @@ abstract class FTPElement {
     }
 
 
-
-
 }

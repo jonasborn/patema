@@ -26,6 +26,7 @@ class FileUtils {
     From https://stackoverflow.com/a/4888400/9407664
     Created by https://stackoverflow.com/users/1248724/zarathustra
      */
+
     public static String humanReadableByteCountBin(long bytes) {
         long absB = bytes == Long.MIN_VALUE ? Long.MAX_VALUE : Math.abs(bytes);
         if (absB < 1024) {

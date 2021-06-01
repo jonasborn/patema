@@ -22,6 +22,7 @@ import static de.jonasborn.patema.ftp.FTPElement.Type.ROOT
 public class FTPRoot extends FTPDirectory<FTPElement> {
     FTPConfig config
     File delegate
+
     FTPRoot(FTPConfig config, File delegate) {
         super(ROOT)
         assert delegate != null
@@ -57,7 +58,7 @@ public class FTPRoot extends FTPDirectory<FTPElement> {
     @Override
     List<FTPElement> list() {
         def list = []
-        list.addAll delegate.listFiles().findAll {it.isDirectory()}.collect() {
+        list.addAll delegate.listFiles().findAll { it.isDirectory() }.collect() {
             return new FTPProject(this, it.name)
         }
         list.addAll(

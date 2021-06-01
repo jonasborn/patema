@@ -18,13 +18,12 @@
 package de.jonasborn.patema.template
 
 import com.mitchellbosecke.pebble.PebbleEngine
-import com.mitchellbosecke.pebble.loader.ClasspathLoader
 import com.mitchellbosecke.pebble.loader.FileLoader
 
 class Templates {
     static PebbleEngine engine
     static {
-        engine =  new PebbleEngine.Builder().loader(
+        engine = new PebbleEngine.Builder().loader(
                 new FileLoader()
         ).templateCache(null).tagCache(null).cacheActive(false).build()
     }

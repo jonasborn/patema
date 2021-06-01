@@ -20,7 +20,7 @@ package de.jonasborn.patema.io
 class ChunkedFileConfig {
 
     boolean annoying = false
-    boolean compress = true ;
+    boolean compress = true;
     boolean encrypt = true;
     int blockSize = 1024 * 1024
     String password;
