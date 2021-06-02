@@ -27,6 +27,7 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
     File delegate
     FTPRoot root;
     String name
+    private boolean locked = false;
 
     FTPProject(FTPRoot root, String name) {
         super(PROJECT)
@@ -35,6 +36,14 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
         this.delegate = new File(root.delegate, this.name)
     }
 
+
+    public void lock() {
+        locked = true
+    }
+
+    public void unlock() {
+        locked  = false
+    }
 
     @Override
     String getPath() {

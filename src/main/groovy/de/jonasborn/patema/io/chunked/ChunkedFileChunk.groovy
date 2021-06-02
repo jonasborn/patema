@@ -15,17 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.io
+package de.jonasborn.patema.io.chunked
 
-class ChunkedFileConfig {
+class ChunkedFileChunk {
 
-    boolean annoying = false
-    boolean compress = true;
-    boolean encrypt = true;
-    int blockSize = 1024 * 1024
-    String password;
+    ChunkedFile parent
+    File file
+    int index;
 
-    ChunkedFileConfig(String password) {
-        this.password = password
+    ChunkedFileChunk(ChunkedFile parent, File file, int index) {
+        this.parent = parent
+        this.file = file
+        this.index = index
     }
 }

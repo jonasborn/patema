@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.io
+package de.jonasborn.patema.io.chunked
 
 class ChunkedOutputStream extends OutputStream {
 

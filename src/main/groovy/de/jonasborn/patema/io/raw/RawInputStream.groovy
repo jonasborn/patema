@@ -15,13 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.io
+package de.jonasborn.patema.io.raw
 
-class ChunkedInputStream extends InputStream {
+import com.google.common.io.ByteStreams
+import de.jonasborn.patema.io.chunked.ChunkedFile
+import de.jonasborn.patema.io.chunked.ChunkedFileConfig
 
-    ChunkedFile file;
+class RawInputStream extends InputStream {
 
-    ChunkedInputStream(ChunkedFile file) {
+    RawFile file;
+
+    RawInputStream(RawFile file) {
         this.file = file
     }
 
@@ -35,8 +39,10 @@ class ChunkedInputStream extends InputStream {
         try {
             def temp = file.read(b.length)
             if (temp == null) return -1
-            System.arraycopy(temp, 0, b, 0, temp.length)
-            return temp.length
+            System.arraycopy(temp, 0, b, 0, Math.min(b.length, temp.length))
+            println "TEMPL " + temp.length
+            println "BLEN  " + b.length
+            return Math.min(b.length, temp.length)
         } catch (Exception e) {
             e.printStackTrace()
             throw e
@@ -67,5 +73,28 @@ class ChunkedInputStream extends InputStream {
     @Override
     void close() throws IOException {
         file.seek(0)
+    }
+
+    public static void main(String[] args) {
+        def c = new ChunkedFile(new ChunkedFileConfig("a"), new File("root/project-test1/8axw02ww.exe"))
+        def r = new RawFile(c)
+        def is = new RawInputStream(r)
+
+        def f = new File("test")
+        FileOutputStream fout = new FileOutputStream(f)
+
+        def total = 0
+        def read =0;
+        byte[] buffer = new byte[8192]
+        while ((read = is.read(buffer)) > 0) {
+            fout.write(buffer, 0, read)
+            def before = total
+            total += read
+            println "READ TOTAL: " + total + " ${total - before}"
+        }
+        println "-"
+        println "SIZE :" + r.size
+        println "READ : " + total + " - ${r.size - total}"
+        println "FILE :" + f.length() + " - ${r.size - f.length()}"
     }
 }

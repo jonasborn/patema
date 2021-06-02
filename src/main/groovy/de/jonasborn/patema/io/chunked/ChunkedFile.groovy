@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.io
+package de.jonasborn.patema.io.chunked
 
 
 import java.nio.ByteBuffer
@@ -28,7 +28,7 @@ class ChunkedFile {
     ChunkedFileConfig config
     ChunkedIO io
 
-    private File splinterFile(int index) {
+    private File file(int index) {
         return new File(directory, index + ".ptma")
     }
 
@@ -61,7 +61,7 @@ class ChunkedFile {
         def bout = new ByteArrayOutputStream(amount) //Target to write to
         def written = 0
         int index = (position / config.blockSize) as int //Example: 123/1024 = 0;
-        def file = splinterFile(index)
+        def file = file(index)
         if (!file.exists()) return null
         int startOfFile = (position - (index * config.blockSize)) as int
         def data = io.decode(index, file.bytes)
@@ -73,7 +73,7 @@ class ChunkedFile {
 
         while (amount > written) {
             index++;
-            file = splinterFile(index)
+            file = file(index)
             if (!file.exists()) return bout.toByteArray()
             startOfFile = (position - (index * config.blockSize)) as int
             data = io.decode(index, file.bytes)
@@ -102,6 +102,10 @@ class ChunkedFile {
         }
     }
 
+    public File getDirectory() {
+        return directory
+    }
+
     public void finish() {
         def list = directory.listFiles()
 
@@ -117,7 +121,7 @@ class ChunkedFile {
     public synchronized void write(byte[] data) {
         int index = (position / config.blockSize) as int // 3210/1024 = 3;
         println "index " + index
-        def file = splinterFile(index)
+        def file = file(index)
         int startOfFile = (position - (index * config.blockSize)) as int //3210 - 3072 = 138
         println "start " + startOfFile
         ByteBuffer buffer = ByteBuffer.allocate(config.blockSize)
@@ -149,5 +153,25 @@ class ChunkedFile {
 
     }
 
+
+    public List<ChunkedFileChunk> listChuncks() {
+        List<File> list = this.directory.listFiles()
+        if (list == null) return []
+        list = list.findAll {it.name.endsWith(".ptma")}
+        list.sort(new Comparator<File>()
+        {
+            @Override
+            public int compare(File o1, File o2) {
+                def i1 = (o1 as File).name.replaceAll("[^0-9.]", "")
+                def i2 = (o2 as File).name.replaceAll("[^0-9.]", "")
+                return i1 <=> i2
+            }
+        })
+        def r = []
+        for (int i = 0; i < list.size(); i++) {
+            r.add(new ChunkedFileChunk(this, list[i], i))
+        }
+        return r
+    }
 
 }

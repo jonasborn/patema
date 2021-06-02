@@ -17,10 +17,10 @@
 
 package de.jonasborn.patema.ftp
 
-import de.jonasborn.patema.io.ChunkedFile
-import de.jonasborn.patema.io.ChunkedFileConfig
-import de.jonasborn.patema.io.ChunkedInputStream
-import de.jonasborn.patema.io.ChunkedOutputStream
+import de.jonasborn.patema.io.chunked.ChunkedFile
+import de.jonasborn.patema.io.chunked.ChunkedFileConfig
+import de.jonasborn.patema.io.chunked.ChunkedInputStream
+import de.jonasborn.patema.io.chunked.ChunkedOutputStream
 
 class FTPProjectFile extends FTPElement {
 

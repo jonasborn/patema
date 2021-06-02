@@ -38,6 +38,8 @@ import javax.net.ssl.SSLSocketFactory;
 /**
  * Represents a FTP user connected to the server
  * @author Guilherme Chaguri
+ * Added Groovy compatible command handler
+ * @author Jonas Born
  */
 public class FTPConnection implements Closeable {
 
