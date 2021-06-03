@@ -58,6 +58,7 @@ class ChunkedFile {
 
 
     public byte[] read(int amount) {
+        return r(amount);
         def bout = new ByteArrayOutputStream(amount) //Target to write to
         def written = 0
         int index = (position / config.blockSize) as int //Example: 123/1024 = 0;
@@ -119,6 +120,7 @@ class ChunkedFile {
     }
 
     public synchronized void write(byte[] data) {
+        fileSizes = null
         int index = (position / config.blockSize) as int // 3210/1024 = 3;
         println "index " + index
         def file = file(index)
@@ -172,6 +174,92 @@ class ChunkedFile {
             r.add(new ChunkedFileChunk(this, list[i], i))
         }
         return r
+    }
+
+    public Map<File, Long> fileSizes = null
+
+
+    /**
+     * Search for the current file using the position.
+     * Will also return the sum of all sizes of files before
+     * @return A fresh Positioning object
+     */
+    public Positioning getPositioning() {
+        def iter = fileSizes.iterator()
+        def sum = 0;
+        if (!iter.hasNext()) return null
+        def element = iter.next()
+        sum += element.value
+        while (sum <= position) {
+            if (!iter.hasNext()) return null
+            element = iter.next()
+            sum += element.value
+        }
+        return new Positioning(sum - element.value, element.key)
+    }
+
+    static class Positioning {
+        Long before;
+        File file
+
+        Positioning(Long before, File file) {
+            this.before = before
+            this.file = file
+        }
+
+
+        @Override
+        public String toString() {
+            return "CurrentResult{" +
+                    "before=" + before +
+                    ", file=" + file +
+                    '}';
+        }
+    }
+
+    //This could be a do-while but groovy won't support it
+    public byte[] readDynamic(int amount) {
+        if (fileSizes == null ){
+            def list = directory.listFiles()
+            fileSizes = [:]
+            if (list != null) {
+                list.each {
+                    fileSizes.put(it, it.lastModified())
+                }
+            }
+        }
+        def current = getPositioning() //Get the positioning
+        if (current == null) return null //When there is no file anymore, exit
+        //Get the file position by subtracting all other file sizes from the current position
+        int startOfFile = (position - current.before) as int
+        def file = current.file
+        def bout = new ByteArrayOutputStream(amount) //Target to write to, amount is the max to use
+        def written = 0
+        def data = io.decode(0, file.bytes) //Load the bytes
+        //Either take the remaining bytes of the current file or the amount as max available
+        int available = Math.min(data.length - startOfFile, amount)
+        if (available <= 0) return null
+        //Write the data to the output
+        bout.write(data, startOfFile, available)
+        position += available //Add the read bytes to the position
+        written += available; //Add the written bytes to the position
+        while (amount > written) { //While there is still sth. to read left
+            current = getPositioning() //Get the positioning again
+            if (current == null) return bout.toByteArray() //When no positioning is found, return the current result
+            file = current.file
+            if (!file.exists()) return bout.toByteArray() //When the file is missing, return the current result
+            startOfFile = (position - current.before) as int //Set the start of file by substr. like above
+            data = io.decode(0, file.bytes) //Load the data
+            //Take either the remaining size or the amount needed minus the already written bytes
+            available = Math.min(data.length - startOfFile, amount - written)
+            //If there is nothing left to read, just return the result
+            if (available <= 0) return bout.toByteArray()
+            bout.write(data, startOfFile, available)
+            position += available
+            written += available
+        }
+
+        return bout.toByteArray()
     }
 
 }

@@ -17,10 +17,21 @@
 
 package de.jonasborn.patema.ftp
 
+import com.google.common.cache.CacheBuilder
+import com.google.common.cache.CacheLoader
+import com.google.common.cache.LoadingCache
+import de.jonasborn.patema.io.PartedFile
+import de.jonasborn.patema.io.PartedInputStream
+import de.jonasborn.patema.io.PartedOutputStream
+import de.jonasborn.patema.io.UnPackedFile
+import de.jonasborn.patema.io.UnPackedIO
 import de.jonasborn.patema.io.chunked.ChunkedFile
 import de.jonasborn.patema.io.chunked.ChunkedFileConfig
 import de.jonasborn.patema.io.chunked.ChunkedInputStream
 import de.jonasborn.patema.io.chunked.ChunkedOutputStream
+import groovy.transform.CompileStatic
+
+import java.util.concurrent.TimeUnit
 
 class FTPProjectFile extends FTPElement {
 
@@ -36,9 +47,9 @@ class FTPProjectFile extends FTPElement {
     File delegate;
     FTPProject project;
     String title;
-    ChunkedFile chunkedFile;
-    ChunkedOutputStream cout
-    ChunkedInputStream cin;
+    UnPackedFile unPackedFile;
+    PartedOutputStream cout
+    PartedInputStream cin;
 
     /**
      * Will initialize the underlying chunked file and create
@@ -54,7 +65,8 @@ class FTPProjectFile extends FTPElement {
         this.project = project
         this.delegate = new File(project.delegate, title)
         if (!delegate.exists()) delegate.mkdir()
-        this.chunkedFile = new ChunkedFile(createConfig(project.getRoot().config), delegate)
+        UnPackedIO io = new UnPackedIO(createConfig(project.getRoot().config))
+        this.unPackedFile = new UnPackedFile(delegate, io)
     }
 
     @Override
@@ -74,23 +86,23 @@ class FTPProjectFile extends FTPElement {
 
     @Override
     void delete() {
-        println "DELE"
         println delegate.deleteDir()
     }
 
     public long getSize() {
-        return chunkedFile.getSize();
+        return unPackedFile.getSize();
     }
 
-
-    public ChunkedInputStream read(FTPConfig config, long start) {
-        if (cin == null) cin = new ChunkedInputStream(chunkedFile)
+    @CompileStatic
+    public PartedInputStream read(FTPConfig config, long start) {
+        if (cin == null) cin = new PartedInputStream(unPackedFile)
         cin.seek(start)
         return cin
     }
 
-    public ChunkedOutputStream write(FTPConfig config, long start) {
-        if (cout == null) cout = new ChunkedOutputStream(chunkedFile)
+    @CompileStatic
+    public PartedOutputStream write(FTPConfig config, long start) {
+        if (cout == null) cout = new PartedOutputStream(unPackedFile)
         cout.seek(start)
         return cout
     }

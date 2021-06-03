@@ -9,6 +9,11 @@ Just give me some time!
 
 ---
 
+## Current status
+Currently implementing a alternative encryption solution using Apache Commons Crypto.
+The lib will use OpenSsl, therefore using AES-NI on Intel-Chips - could be a bit faster.
+Currently 250 KB/s is a bit slow
+
 ## About
 Patema is a set of tools and algorithms to access LTO-tapes using Java.
 The project also contains a easy to use FTP-server, able to compress and encrypt with random
@@ -27,5 +32,3 @@ are documented and I'm going to publish the changes to the main repo afterwards.
 The source of MinimalFTP is licensed using the Apache license in version 2 - see MINIMALFTP-LICENSE.
 
 
-
- 

@@ -15,19 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.ftp
+package de.jonasborn.patema.io
 
-class FTPConfig {
+class PartedChunk {
 
-    String username
-    String password
-    boolean encrypt = false
-    boolean compress = false
-    boolean annoying = false
-    int blockSize = 1024 * 1024
+    Long position
+    File file
 
-    FTPConfig(String username, String password) {
-        this.username = username
-        this.password = password
+    PartedChunk(Long position, File file) {
+        this.position = position
+        this.file = file
     }
 }
