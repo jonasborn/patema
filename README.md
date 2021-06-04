@@ -9,6 +9,15 @@ Just give me some time!
 
 ---
 
+---
+**SECURITY INFORMATION**
+
+Do not use a already used password for a second tape.
+You never should use passwords multiple times - but here
+it may corrupt the whole encryption system. Scroll down to "Crypto" for more infos. 
+
+---
+
 ## Current status
 ### Encryption
 Currently implementing an alternative encryption solution using Apache Commons Crypto.
@@ -21,6 +30,7 @@ Cipher with a custom iv xor (my favorite).
 Both of them are running at around 10 MB/s.
 Just had to learn a "few" infos about AES and all it's specials ^^
 
+
 ## About
 Patema is a set of tools and algorithms to access LTO-tapes using Java.
 The project also contains a easy to use FTP-server, able to compress and encrypt with random
@@ -28,8 +38,16 @@ access using a block based storage system (called see SplinteredFile).
 
 ## Storage System
 Before writing data to the tapes, all information is compressed and encrypted.
-This is done using LZMA2 and AES in CTR mode using a 256 bit key. As the ftp server
+This is done using LZMA2 and AES. As the ftp server
 needs to read and write randomly, the data is chunked in single files.
+
+## Crypto
+Currently there are two ways to encrypt file parts when creating projects:
+CTR and ECB.
+Both of them use a special iv creation based on the password. This may not seem secure,
+using a random read and write system, I just could not find a better solution. All files
+are using a IV, created from the initial IV and the current index of the file.
+The en/decryption is currently under development.
 
 ## Used software
 ### MinimalFTP
