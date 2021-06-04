@@ -43,9 +43,9 @@ class ChunkedIO {
             .setKeyLength(AliceContext.KeyLength.BITS_128)
             .build())
 
-    ChunkedFileConfig config;
+    UnPackedFileConfig config;
 
-    ChunkedIO(ChunkedFileConfig config) {
+    ChunkedIO(UnPackedFileConfig config) {
         this.config = config
     }
 

@@ -17,12 +17,14 @@
 
 package de.jonasborn.patema.io
 
-class PartedChunk {
+class PartedFileChunk {
 
+    int index
     Long position
     File file
 
-    PartedChunk(Long position, File file) {
+    PartedFileChunk(int index, Long position, File file) {
+        this.index = index
         this.position = position
         this.file = file
     }

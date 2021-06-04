@@ -17,11 +17,10 @@
 
 package de.jonasborn.patema.io
 
-import de.jonasborn.patema.io.chunked.ChunkedFileConfig
+import de.jonasborn.patema.io.chunked.UnPackedFileConfig
 import de.jonasborn.patema.io.chunked.ChunkedIO
 import org.apache.commons.crypto.cipher.CryptoCipher
 import org.apache.commons.crypto.cipher.CryptoCipherFactory
-import org.apache.commons.crypto.cipher.OpenSsl
 import org.apache.commons.crypto.utils.Utils
 
 import javax.crypto.Cipher
@@ -37,11 +36,11 @@ class PartedIO {
     final CryptoCipher decrypt;
 
     public PartedIO(String password) {
-        key = new SecretKeySpec(getUTF8Bytes("1234567890123456"),"AES");
+        key = new SecretKeySpec(getUTF8Bytes(password),"AES");
         iv = new IvParameterSpec(getUTF8Bytes("1234567890123456"));
 
         final Properties properties = new Properties();
-        //properties.setProperty(CryptoCipherFactory.CLASSES_KEY, CryptoCipherFactory.CipherProvider.OPENSSL.getClassName());
+        properties.setProperty(CryptoCipherFactory.CLASSES_KEY, CryptoCipherFactory.CipherProvider.OPENSSL.getClassName());
         final String transform = "AES/CBC/PKCS5Padding";
         encrypt = Utils.getCipherInstance(transform, properties);
         encrypt.init(Cipher.ENCRYPT_MODE, key, iv);
@@ -58,7 +57,7 @@ class PartedIO {
     }
 
     public byte[] decrypt(byte[] input) {
-        byte[] output = new byte[128]
+        byte[] output = new byte[input.length + key.encoded.length]
         def length = decrypt.doFinal(input, 0, input.length, output, 0)
         byte[] real = new byte[length]
         System.arraycopy(output, 0, real, 0, length)
@@ -76,13 +75,13 @@ class PartedIO {
         def data = new File("C:\\Users\\Jonas Born\\7z1900-x64.exe").bytes
         Long start = System.currentTimeMillis()
         def pio = new PartedIO("HalloWelt")
-        pio.encrypt(data)
+        pio.decrypt(pio.encrypt(data))
         println System.currentTimeMillis() - start
         start = System.currentTimeMillis()
-        def c = new ChunkedFileConfig("HalloWelt")
+        def c = new UnPackedFileConfig("HalloWelt")
         c.compress = false
         ChunkedIO io = new ChunkedIO(c)
-        io.encode(0, data)
+        io.decode(0, io.encode(0, data))
         println System.currentTimeMillis() - start
     }
 }

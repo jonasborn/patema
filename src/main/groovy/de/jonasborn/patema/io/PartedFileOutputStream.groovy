@@ -19,11 +19,11 @@ package de.jonasborn.patema.io
 
 import de.jonasborn.patema.io.chunked.ChunkedFile
 
-class PartedOutputStream extends OutputStream {
+class PartedFileOutputStream extends OutputStream {
 
     PartedFile file
 
-    PartedOutputStream(PartedFile file) {
+    PartedFileOutputStream(PartedFile file) {
         this.file = file
     }
 

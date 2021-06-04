@@ -117,14 +117,14 @@ class FTPFileSystem implements IFileSystem<FTPElement> {
     @Override
     InputStream readFile(FTPElement file, long start) throws IOException {
         println "READ"
-        if (file.isProjectFile()) return file.asProjectFile().read(config, start)
+        if (file.isProjectFile()) return file.asProjectFile().read( start)
         throw new IOException("File access not allowed")
     }
 
     @Override
     OutputStream writeFile(FTPElement file, long start) throws IOException {
         println "WRITE: " + file
-        if (file.isProjectFile()) return file.asProjectFile().write(config, start)
+        if (file.isProjectFile()) return file.asProjectFile().write( start)
         throw new IOException("File access not allowed")
     }
 

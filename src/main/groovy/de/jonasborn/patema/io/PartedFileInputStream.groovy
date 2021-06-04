@@ -17,11 +17,11 @@
 
 package de.jonasborn.patema.io
 
-class PartedInputStream extends InputStream {
+class PartedFileInputStream extends InputStream {
 
     PartedFile file;
 
-    PartedInputStream(PartedFile file) {
+    PartedFileInputStream(PartedFile file) {
         this.file = file
     }
 
@@ -71,8 +71,8 @@ class PartedInputStream extends InputStream {
     }
 
     public static void main(String[] args) {
-        def c = new RawPartedFile(new File("root/project-test1/7z1900-x64.exe")) {}
-        def is = new PartedInputStream(c)
+        def c = new PartedRawFile(new File("root/project-test1/7z1900-x64.exe")) {}
+        def is = new PartedFileInputStream(c)
 
         def f = new File("test")
         FileOutputStream fout = new FileOutputStream(f)

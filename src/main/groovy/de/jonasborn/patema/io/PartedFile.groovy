@@ -39,9 +39,9 @@ abstract class PartedFile {
 
     public abstract Long getSize(File file)
 
-    public abstract byte[] pack(File file, byte[] data)
+    public abstract byte[] pack(Integer index, byte[] data)
 
-    public abstract byte[] unpack(File file, byte[] data)
+    public abstract byte[] unpack(Integer file, byte[] data)
 
     public void read(File file, byte[] bytes) {
 
@@ -71,8 +71,9 @@ abstract class PartedFile {
     }
 
     @CompileStatic
-    public PartedChunk getReadChunk(long position) {
+    public PartedFileChunk getReadChunk(long position) {
         loadSizes()
+        int index = 0
         final Iterator<Map.Entry<File, Long>> iter = sizes.iterator()
         final Long sum = 0;
         if (!iter.hasNext()) return null
@@ -82,15 +83,16 @@ abstract class PartedFile {
             if (!iter.hasNext()) return null
             element = iter.next()
             sum += element.value
+            index++;
         }
-        return new PartedChunk(sum - element.value, element.key)
+        return new PartedFileChunk(index, sum - element.value, element.key)
     }
 
     @CompileStatic
-    public PartedChunk getWriteChunk(long position) {
+    public PartedFileChunk getWriteChunk(long position) {
         int index = (int) (position / partSize)
         File file = createFile(index);
-        return new PartedChunk((long) (index * partSize), file)
+        return new PartedFileChunk(index, (long) (index * partSize), file)
     }
 
     /**
@@ -108,7 +110,7 @@ abstract class PartedFile {
         def file = current.file
         def bout = new ByteArrayOutputStream(amount) //Target to write to, amount is the max to use
         def written = 0
-        def data = unpack(file, file.bytes) //Load the bytes
+        def data = unpack(current.index, file.bytes) //Load the bytes
         //Either take the remaining bytes of the current file or the amount as max available
         int available = Math.min(data.length - startOfFile, amount)
         if (available <= 0) return null
@@ -122,7 +124,7 @@ abstract class PartedFile {
             file = current.file
             if (!file.exists()) return bout.toByteArray() //When the file is missing, return the current result
             startOfFile = (position - current.position) as int //Set the start of file by substr. like above
-            data = unpack(file, file.bytes) //Load the data
+            data = unpack(current.index, file.bytes) //Load the data
             //Take either the remaining size or the amount needed minus the already written bytes
             available = Math.min(data.length - startOfFile, amount - written)
             //If there is nothing left to read, just return the result
@@ -137,13 +139,13 @@ abstract class PartedFile {
 
     @CompileStatic
     public synchronized void write(byte[] data) {
-        final PartedChunk positioning = getWriteChunk(position)
+        final PartedFileChunk positioning = getWriteChunk(position)
         final int index = (int) (position / partSize)
         final File file = positioning.file
         final int startOfFile = (int) (position - (index * partSize))
         final ByteBuffer buffer = ByteBuffer.allocate(partSize)
         if (file.exists()) {
-            buffer.put(unpack(file, file.bytes))
+            buffer.put(unpack(index, file.bytes))
         }
         buffer.position(startOfFile)
 
@@ -160,7 +162,7 @@ abstract class PartedFile {
         final byte[] output = new byte[buffer.position()]
         buffer.rewind()
         buffer.get(output)
-        final byte[] content = pack(file, output)
+        final byte[] content = pack(index, output)
         file.setBytes(content)
         position += now.length
         sizes = null

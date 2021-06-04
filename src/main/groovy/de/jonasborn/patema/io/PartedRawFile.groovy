@@ -17,14 +17,12 @@
 
 package de.jonasborn.patema.io
 
-class UnPackedFile extends PartedFile{
+class PartedRawFile extends PartedFile{
 
     File directory
-    UnPackedIO io
 
-    UnPackedFile(File directory, UnPackedIO io) {
+    PartedRawFile(File directory) {
         this.directory = directory
-        this.io = io
     }
 
     @Override
@@ -49,30 +47,24 @@ class UnPackedFile extends PartedFile{
         return list
     }
 
-
-
     @Override
     Long getSize(File file) {
-        return file.lastModified()
+        return file.size()
     }
 
     @Override
-    byte[] pack(File file, byte[] data) {
-        io.encode(file, data)
+    byte[] pack(Integer integer, byte[] data) {
+        return data
     }
 
     @Override
-    byte[] unpack(File file, byte[] data) {
-        io.decode(file, data)
+    byte[] unpack(Integer index, byte[] data) {
+        return data
     }
 
-    @Override
-    void close() {
-        def files = listFiles()
-        for (int i = 0; i < files.size(); i++) {
-            final file = files[i]
-            def data = unpack(file, file.bytes)
-            file.setLastModified(data.size())
-        }
+    public static void main(String[] args) {
+        def imp = new PartedRawFile()
+        def out = new FileOutputStream("test")
+
     }
 }

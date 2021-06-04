@@ -17,9 +17,9 @@
 
 package de.jonasborn.patema.io.raw
 
-import com.google.common.io.ByteStreams
+
 import de.jonasborn.patema.io.chunked.ChunkedFile
-import de.jonasborn.patema.io.chunked.ChunkedFileConfig
+import de.jonasborn.patema.io.chunked.UnPackedFileConfig
 
 class RawInputStream extends InputStream {
 
@@ -76,7 +76,7 @@ class RawInputStream extends InputStream {
     }
 
     public static void main(String[] args) {
-        def c = new ChunkedFile(new ChunkedFileConfig("a"), new File("root/project-test1/8axw02ww.exe"))
+        def c = new ChunkedFile(new UnPackedFileConfig("a"), new File("root/project-test1/8axw02ww.exe"))
         def r = new RawFile(c)
         def is = new RawInputStream(r)
 

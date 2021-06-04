@@ -25,14 +25,14 @@ class ChunkedFile {
     private File directory;
     private File description;
     private Long position = 0
-    ChunkedFileConfig config
+    UnPackedFileConfig config
     ChunkedIO io
 
     private File file(int index) {
         return new File(directory, index + ".ptma")
     }
 
-    ChunkedFile(ChunkedFileConfig config, File directory) {
+    ChunkedFile(UnPackedFileConfig config, File directory) {
         assert config != null
         this.config = config
         this.io = new ChunkedIO(config)
@@ -40,7 +40,7 @@ class ChunkedFile {
         this.description = new File(directory, "description.ptmad")
     }
 
-    public void setConfig(ChunkedFileConfig config) {
+    public void setConfig(UnPackedFileConfig config) {
         this.config = config
     }
 

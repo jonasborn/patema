@@ -20,23 +20,29 @@ package de.jonasborn.patema.ftp
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import com.google.common.cache.LoadingCache
-import de.jonasborn.patema.io.PartedFile
-import de.jonasborn.patema.io.PartedInputStream
-import de.jonasborn.patema.io.PartedOutputStream
-import de.jonasborn.patema.io.UnPackedFile
+import de.jonasborn.patema.io.PartedFileInputStream
+import de.jonasborn.patema.io.PartedFileOutputStream
+import de.jonasborn.patema.io.PartedCompressedCryptoFile
 import de.jonasborn.patema.io.UnPackedIO
-import de.jonasborn.patema.io.chunked.ChunkedFile
-import de.jonasborn.patema.io.chunked.ChunkedFileConfig
-import de.jonasborn.patema.io.chunked.ChunkedInputStream
-import de.jonasborn.patema.io.chunked.ChunkedOutputStream
+import de.jonasborn.patema.io.chunked.UnPackedFileConfig
 import groovy.transform.CompileStatic
 
 import java.util.concurrent.TimeUnit
 
 class FTPProjectFile extends FTPElement {
 
-    private static ChunkedFileConfig createConfig(FTPConfig config) {
-        def c = new ChunkedFileConfig(config.password)
+    LoadingCache<UnPackedFileConfig, UnPackedIO> ioCache = CacheBuilder.newBuilder().expireAfterAccess(
+            10, TimeUnit.MINUTES
+    ).build(new CacheLoader<UnPackedFileConfig, UnPackedIO>() {
+        @Override
+        UnPackedIO load(UnPackedFileConfig key) throws Exception {
+            return new UnPackedIO(key)
+        }
+    })
+
+
+    private static UnPackedFileConfig createConfig(FTPConfig config) {
+        def c = new UnPackedFileConfig(config.password)
         c.blockSize = config.blockSize
         c.compress = config.compress
         c.encrypt = config.encrypt
@@ -47,9 +53,9 @@ class FTPProjectFile extends FTPElement {
     File delegate;
     FTPProject project;
     String title;
-    UnPackedFile unPackedFile;
-    PartedOutputStream cout
-    PartedInputStream cin;
+    PartedCompressedCryptoFile unPackedFile;
+    PartedFileOutputStream cout
+    PartedFileInputStream cin;
 
     /**
      * Will initialize the underlying chunked file and create
@@ -65,8 +71,8 @@ class FTPProjectFile extends FTPElement {
         this.project = project
         this.delegate = new File(project.delegate, title)
         if (!delegate.exists()) delegate.mkdir()
-        UnPackedIO io = new UnPackedIO(createConfig(project.getRoot().config))
-        this.unPackedFile = new UnPackedFile(delegate, io)
+        UnPackedIO io = ioCache.get(createConfig(project.getRoot().config))
+        this.unPackedFile = new PartedCompressedCryptoFile(delegate, io)
     }
 
     @Override
@@ -94,15 +100,15 @@ class FTPProjectFile extends FTPElement {
     }
 
     @CompileStatic
-    public PartedInputStream read(FTPConfig config, long start) {
-        if (cin == null) cin = new PartedInputStream(unPackedFile)
+    public PartedFileInputStream read(long start) {
+        if (cin == null) cin = new PartedFileInputStream(unPackedFile)
         cin.seek(start)
         return cin
     }
 
     @CompileStatic
-    public PartedOutputStream write(FTPConfig config, long start) {
-        if (cout == null) cout = new PartedOutputStream(unPackedFile)
+    public PartedFileOutputStream write(long start) {
+        if (cout == null) cout = new PartedFileOutputStream(unPackedFile)
         cout.seek(start)
         return cout
     }

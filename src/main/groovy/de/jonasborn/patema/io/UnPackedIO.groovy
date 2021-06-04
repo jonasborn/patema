@@ -21,7 +21,7 @@ import com.google.common.io.ByteStreams
 import com.rockaport.alice.Alice
 import com.rockaport.alice.AliceContext
 import com.rockaport.alice.AliceContextBuilder
-import de.jonasborn.patema.io.chunked.ChunkedFileConfig
+import de.jonasborn.patema.io.chunked.UnPackedFileConfig
 import groovy.transform.CompileStatic
 import org.tukaani.xz.LZMA2Options
 import org.tukaani.xz.XZInputStream
@@ -34,7 +34,10 @@ class UnPackedIO {
     one of the most attacked algos out there. Therefore I'm also sure
     that I can annoy every body using random keys for every file part.
     Guessing one key used for all would make everything accessible, using this
-    solution, it could take some time
+    solution, it could take some time.
+    Comment: This may be true, but where the hell are the keys stored?
+    On the tape? Then you have to encrypt them, same problem as before.
+    Therefore, quite useless I guess...
      */
     Map<String, String> keys = [:]
 
@@ -45,9 +48,9 @@ class UnPackedIO {
             .setKeyLength(AliceContext.KeyLength.BITS_128)
             .build())
 
-    ChunkedFileConfig config;
+    UnPackedFileConfig config;
 
-    UnPackedIO(ChunkedFileConfig config) {
+    UnPackedIO(UnPackedFileConfig config) {
         this.config = config
     }
 

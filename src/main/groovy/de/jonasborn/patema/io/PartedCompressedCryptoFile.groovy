@@ -17,12 +17,21 @@
 
 package de.jonasborn.patema.io
 
-class RawPartedFile extends PartedFile{
+import de.jonasborn.patema.io.crypto.PartedCTRCrypto
+import de.jonasborn.patema.io.crypto.PartedCrypto
+import de.jonasborn.patema.io.crypto.PartedECBCrypto
+
+class PartedCompressedCryptoFile extends PartedFile{
 
     File directory
+    UnPackedIO io
+    PartedCrypto crypto;
 
-    RawPartedFile(File directory) {
+    PartedCompressedCryptoFile(File directory, String password) {
         this.directory = directory
+        this.io = io
+        crypto = new PartedECBCrypto()
+        crypto.setPassword(password)
     }
 
     @Override
@@ -47,24 +56,35 @@ class RawPartedFile extends PartedFile{
         return list
     }
 
+
+
     @Override
     Long getSize(File file) {
-        return file.size()
+        return file.lastModified()
+    }
+
+    private int getIndex(File file) {
+
     }
 
     @Override
-    byte[] pack(File file, byte[] data) {
-        return data
+    byte[] pack(Integer integer, byte[] data) {
+        crypto.encrypt(integer, data)
     }
 
     @Override
-    byte[] unpack(File file, byte[] data) {
-        return data
+    byte[] unpack(Integer integer, byte[] data) {
+        crypto.decrypt(integer, data)
     }
 
-    public static void main(String[] args) {
-        def imp = new RawPartedFile()
-        def out = new FileOutputStream("test")
-
+    @Override
+    void close() {
+        def files = listFiles()
+        for (int i = 0; i < files.size(); i++) {
+            final file = files[i]
+            def data = unpack(i, file.bytes)
+            file.setLastModified(data.size())
+        }
     }
+
 }

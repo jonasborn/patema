@@ -17,7 +17,7 @@
 
 package de.jonasborn.patema.io.chunked
 
-class ChunkedFileConfig {
+class UnPackedFileConfig {
 
     boolean annoying = false
     boolean compress = true;
@@ -25,7 +25,7 @@ class ChunkedFileConfig {
     int blockSize = 1024 * 1024
     String password;
 
-    ChunkedFileConfig(String password) {
+    UnPackedFileConfig(String password) {
         this.password = password
     }
 }
