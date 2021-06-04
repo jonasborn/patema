@@ -10,7 +10,7 @@ Just give me some time!
 ---
 
 ## Current status
-Currently implementing a alternative encryption solution using Apache Commons Crypto.
+Currently implementing an alternative encryption solution using Apache Commons Crypto.
 The lib will use OpenSsl, therefore using AES-NI on Intel-Chips - could be a bit faster.
 Currently 250 KB/s is a bit slow
 
