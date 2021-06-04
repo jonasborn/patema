@@ -10,9 +10,16 @@ Just give me some time!
 ---
 
 ## Current status
+### Encryption
 Currently implementing an alternative encryption solution using Apache Commons Crypto.
 The lib will use OpenSsl, therefore using AES-NI on Intel-Chips - could be a bit faster.
 Currently 250 KB/s is a bit slow
+Update:
+Ha, looks like it worked. There are now two supported crypto systems supported:
+PartedCTRCrypto, using a cipher pool to speed up or PartedRCBCrypto using a single
+Cipher with a custom iv xor (my favorite).
+Both of them are running at around 10 MB/s.
+Just had to learn a "few" infos about AES and all it's specials ^^
 
 ## About
 Patema is a set of tools and algorithms to access LTO-tapes using Java.
