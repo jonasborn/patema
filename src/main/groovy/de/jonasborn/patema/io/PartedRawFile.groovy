@@ -62,9 +62,4 @@ class PartedRawFile extends PartedFile{
         return data
     }
 
-    public static void main(String[] args) {
-        def imp = new PartedRawFile()
-        def out = new FileOutputStream("test")
-
-    }
 }

@@ -17,38 +17,16 @@
 
 package de.jonasborn.patema.ftp
 
-import com.google.common.cache.CacheBuilder
-import com.google.common.cache.CacheLoader
-import com.google.common.cache.LoadingCache
+
 import de.jonasborn.patema.io.PartedFileInputStream
 import de.jonasborn.patema.io.PartedFileOutputStream
 import de.jonasborn.patema.io.PartedCompressedCryptoFile
-import de.jonasborn.patema.io.UnPackedIO
-import de.jonasborn.patema.io.chunked.UnPackedFileConfig
-import groovy.transform.CompileStatic
 
-import java.util.concurrent.TimeUnit
+import groovy.transform.CompileStatic
 
 class FTPProjectFile extends FTPElement {
 
-    LoadingCache<UnPackedFileConfig, UnPackedIO> ioCache = CacheBuilder.newBuilder().expireAfterAccess(
-            10, TimeUnit.MINUTES
-    ).build(new CacheLoader<UnPackedFileConfig, UnPackedIO>() {
-        @Override
-        UnPackedIO load(UnPackedFileConfig key) throws Exception {
-            return new UnPackedIO(key)
-        }
-    })
 
-
-    private static UnPackedFileConfig createConfig(FTPConfig config) {
-        def c = new UnPackedFileConfig(config.password)
-        c.blockSize = config.blockSize
-        c.compress = config.compress
-        c.encrypt = config.encrypt
-        c.annoying = config.annoying
-        return c
-    }
 
     File delegate;
     FTPProject project;
@@ -71,8 +49,7 @@ class FTPProjectFile extends FTPElement {
         this.project = project
         this.delegate = new File(project.delegate, title)
         if (!delegate.exists()) delegate.mkdir()
-        UnPackedIO io = ioCache.get(createConfig(project.getRoot().config))
-        this.unPackedFile = new PartedCompressedCryptoFile(delegate, io)
+        this.unPackedFile = new PartedCompressedCryptoFile(delegate, project.getRoot().getConfig().getPassword())
     }
 
     @Override

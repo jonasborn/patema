@@ -17,8 +17,6 @@
 
 package de.jonasborn.patema.io
 
-import de.jonasborn.patema.io.chunked.ChunkedFile
-
 class PartedFileOutputStream extends OutputStream {
 
     PartedFile file

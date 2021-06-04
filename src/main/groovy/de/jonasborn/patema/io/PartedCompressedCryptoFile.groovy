@@ -24,12 +24,10 @@ import de.jonasborn.patema.io.crypto.PartedECBCrypto
 class PartedCompressedCryptoFile extends PartedFile{
 
     File directory
-    UnPackedIO io
     PartedCrypto crypto;
 
     PartedCompressedCryptoFile(File directory, String password) {
         this.directory = directory
-        this.io = io
         crypto = new PartedECBCrypto()
         crypto.setPassword(password)
     }

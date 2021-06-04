@@ -69,26 +69,4 @@ class PartedFileInputStream extends InputStream {
     void close() throws IOException {
         file.seek(0)
     }
-
-    public static void main(String[] args) {
-        def c = new PartedRawFile(new File("root/project-test1/7z1900-x64.exe")) {}
-        def is = new PartedFileInputStream(c)
-
-        def f = new File("test")
-        FileOutputStream fout = new FileOutputStream(f)
-
-        def total = 0
-        def read = 0;
-        byte[] buffer = new byte[8192]
-        while ((read = is.read(buffer)) > 0) {
-            fout.write(buffer, 0, read)
-            def before = total
-            total += read
-            println "READ TOTAL: " + total + " ${total - before}"
-        }
-        println "-"
-        println "SIZE :" + c.size
-        println "READ : " + total + " - ${c.size - total}"
-        println "FILE :" + f.length() + " - ${c.size - f.length()}"
-    }
 }
