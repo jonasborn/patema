@@ -2,3 +2,6 @@
 /out/
 /gradle/
 /build/
+/native/build/
+/native/cmake-build-debug/
+/native/CMakeFiles/

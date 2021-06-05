@@ -16,11 +16,14 @@
 #include <sys/mtio.h>
 
 #include <jni.h>
+#include <jvmti.h>
+#include <hwloc.h>
 
-#include "jtape_BasicTapeDevice.h"
+#include "../build/include/jtape_BasicTapeDevice.h"
 
 #define TRUE 1
 #define FALSE 0
+
 
 
 /* field IDs for commonly used object fields */
@@ -336,7 +339,7 @@ JNIEXPORT void JNICALL Java_jtape_BasicTapeDevice_tapetapeMTUNLOAD
     int fd;
     struct mtop mtop;
 
-    mtop.mt_op = tapeMTUNLOAD;
+    mtop.mt_op = MTUNLOAD;
     mtop.mt_count = 1;
     fd = getFD(env, this);
     if (ioctl(fd, MTIOCTOP, &mtop) == -1) {

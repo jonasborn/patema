@@ -15,19 +15,4 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-cd native || exit
-bash build.sh
-cd ..
-rm libpatema-native.so
-cp native/build/libpatema-native.so lib/libpatema-native.so
-
-exit
-
-gradle build fatJar
-
-rm -fr lib ; mkdir lib
-rm -ft build/include
-javah -classpath ./classes -d ./build/include build/classes/groovy/main/jtape/BasicTapeDevice.class
-
-javac -h build/include -classpath build/libs/patema-all-in-one-jar-*.jar -d ./build/include src/main/groovy/jtape/BasicTapeDevice.java
-gcc -o ./lib/libTapeLinux.so -shared -Wl,-soname,libTapeLinux.so -I$JAVA_HOME/include -I$JAVA_HOME/include/linux -I./build/include src/main/groovy/jtape/TapeLinux.c
+lsscsi "$@"

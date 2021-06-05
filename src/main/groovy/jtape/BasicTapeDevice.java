@@ -252,6 +252,8 @@ public class BasicTapeDevice {
 
     private native void tapeMTBSFM() throws IOException;
 
+    private native void tapeMTUNLOAD() throws IOException;
+
     /* load the JNI library specific for this platform */
     static {
         String osName = System.getProperty("os.name");
@@ -261,9 +263,9 @@ public class BasicTapeDevice {
         }
 
         try {
-            System.load(new File("lib/libTapeLinux.so").getCanonicalPath());
+            System.load(new File("lib/libpatema-native.so").getCanonicalPath());
         } catch (Exception e) {
-            System.out.println("Unable to load libTapeLinux.so from lib/libTapeLinux.so");
+            System.out.println("Unable to load libTapeLinux.so from lib/libpatema-native.so");
             e.printStackTrace();
             System.exit(1);
         }
