@@ -36,6 +36,12 @@ Patema is a set of tools and algorithms to access LTO-tapes using Java.
 The project also contains a easy to use FTP-server, able to compress and encrypt with random
 access using a block based storage system (called see SplinteredFile).
 
+### Structure
+
+The project includes a CMake project in the native folder. This project is used to create
+the libpatema-native (JNI), used to directly control the tape device.
+The main project is build using Java, including sources from JTape and MinimalFTP.
+
 ## Installation
 
 ### Clone the project
@@ -50,12 +56,13 @@ This will install all required tools to build the project. This will include:
 - Groovy 3.x
 - gcc 7.5
 - gradle 2.4
+- CMake 3.10
 
 ``` bash
 bash build.sh
 ```
 
-- Install the project using
+### Install the project
 
 This will install the required runtime tools. This will include
 - tapeinfo
@@ -81,7 +88,7 @@ This is done using LZMA2 and AES. As the ftp server
 needs to read and write randomly, the data is chunked in single files.
 
 ## Crypto
-Currently there are two ways to encrypt file parts when creating projects:
+Currently, there are two ways to encrypt file parts when creating projects:
 CTR and ECB.
 Both of them use a special iv creation based on the password. This may not seem secure,
 using a random read and write system, I just could not find a better solution. All files
