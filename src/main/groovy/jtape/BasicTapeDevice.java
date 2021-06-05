@@ -2,6 +2,7 @@ package jtape;/* BasicTapeDevice.java */
 
 
 import de.jonasborn.patema.info.Sys;
+import de.jonasborn.patema.tape.TapeStatus;
 
 import java.io.*;
 
@@ -106,6 +107,40 @@ public class BasicTapeDevice {
         tapeMTBSFM();
     }
 
+    //Values from https://github.com/iustin/mt-st/blob/0442de1f7c7aa07416df092645bc0c18dcb61cba/mtio.h
+    public TapeStatus getStatus() throws IOException {
+        char[] chars = Integer.toHexString(tapeGetStatus()).toCharArray();
+        TapeStatus ts = new TapeStatus();
+
+        if (chars[0] == '8') ts.setEof(true);
+        if (chars[0] == '4') ts.setBot(true);
+        if (chars[0] == '2') ts.setEot(true);
+        if (chars[0] == '1') ts.setSm(true);
+
+        if (chars[1] == '8') ts.setEod(true);
+        if (chars[1] == '4') ts.setWr_prot(true);
+        // Not implemented
+        if (chars[1] == '1') ts.setOnline(true);
+
+        if (chars[2] == '8') ts.setD_6250(true);
+        if (chars[2] == '4') ts.setD_1600(true);
+        if (chars[2] == '2') ts.setD_800(true);
+        // Not implemented
+
+        // Not implemented
+        if (chars[3] == '4') ts.setDr_open(true);
+        // Not implemented
+        if (chars[3] == '1') ts.setIn_rep_en(true);
+
+        if (chars[4] == '8') ts.setCln(true);
+        // Not implemented
+        // Not implemented
+        // Not implemented
+
+        return ts;
+
+    }
+
 
     public void clearEOF() throws IOException {
         ensureOpen();
@@ -125,6 +160,8 @@ public class BasicTapeDevice {
             throw new IOException("not at logical end of media");
         }
     }
+
+
 
     class TapeInputStream extends InputStream {
         private byte[] temp = new byte[1];
@@ -253,6 +290,8 @@ public class BasicTapeDevice {
     private native void tapeMTBSFM() throws IOException;
 
     private native void tapeMTUNLOAD() throws IOException;
+
+    private native int tapeGetStatus() throws IOException;
 
     /* load the JNI library specific for this platform */
     static {

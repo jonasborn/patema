@@ -29,5 +29,11 @@ class Tape {
         this.vendor = vendor
         this.path = path
         this.device = new BasicTapeDevice("/dev/nst0")
+        TapeStatus status = device.getStatus()
+        println status.eof
+        println status.online
+        println status.in_rep_en
+
+
     }
 }

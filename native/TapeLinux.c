@@ -70,9 +70,9 @@ JNIEXPORT void JNICALL Java_jtape_BasicTapeDevice_tapeOpen
     const char* p;
 
     p = (*env)->GetStringUTFChars(env, path, 0);
-    fd = open(p, O_RDWR);
+    fd = open(p, O_RDWR | O_NONBLOCK);
     (*env)->ReleaseStringUTFChars(env, path, p);
-
+    printf("You entered: %d", fd);
     if (fd == -1) {
         throw(env, errno);
     }
@@ -169,6 +169,29 @@ JNIEXPORT jint JNICALL Java_jtape_BasicTapeDevice_tapeGetBlockSize
         bs = -1;
     } else {
         bs = mtget.mt_dsreg & MT_ST_BLKSIZE_MASK;
+    }
+
+    return bs;
+}
+
+/*
+ * Class:     BasicTapeDevice
+ * Method:    tapeGetStatus
+ * Signature: ()L
+ */
+JNIEXPORT jlong JNICALL Java_jtape_BasicTapeDevice_tapeGetStatus
+        (JNIEnv *env, jobject this)
+{
+    int fd;
+    struct mtget mtget;
+    jint bs;
+
+    fd = getFD(env, this);
+    if (ioctl(fd, MTIOCGET, &mtget) == -1) {
+        throw(env, errno);
+        bs = -1;
+    } else {
+        bs = mtget.mt_gstat;
     }
 
     return bs;
