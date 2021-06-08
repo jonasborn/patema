@@ -20,9 +20,9 @@ package de.jonasborn.patema.io
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import com.google.common.cache.LoadingCache
-import de.jonasborn.patema.io.crypto.PartedCTRCrypto
 import de.jonasborn.patema.io.crypto.PartedCrypto
 import de.jonasborn.patema.io.crypto.PartedECBCrypto
+import de.jonasborn.patema.util.XZUtils
 
 import java.util.concurrent.TimeUnit
 
@@ -82,12 +82,12 @@ class PartedCompressedCryptoFile extends PartedFile{
 
     @Override
     byte[] pack(Integer integer, byte[] data) {
-        crypto.encrypt(integer, data)
+        crypto.encrypt(integer, XZUtils.compress(data))
     }
 
     @Override
     byte[] unpack(Integer integer, byte[] data) {
-        crypto.decrypt(integer, data)
+        XZUtils.decompress(crypto.decrypt(integer, data))
     }
 
     @Override
