@@ -19,6 +19,8 @@
 #include <jvmti.h>
 #include <hwloc.h>
 
+#include "lsscsi.c"
+
 #include "../build/include/jtape_BasicTapeDevice.h"
 
 #define TRUE 1
@@ -146,6 +148,8 @@ JNIEXPORT jint JNICALL Java_jtape_BasicTapeDevice_tapeWrite
     } else if (n == 0) {
         (*env)->SetBooleanField(env, this, td_eomID, TRUE);
     }
+
+
 
     return n;
 }

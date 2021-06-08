@@ -17,6 +17,8 @@
 
 package de.jonasborn.patema.ftp
 
+import com.google.common.io.BaseEncoding
+import de.jonasborn.patema.tape.TapeDescription
 import de.jonasborn.patema.util.FileUtils
 
 import static de.jonasborn.patema.ftp.FTPElement.Type.PROJECT
@@ -28,6 +30,7 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
     FTPRoot root;
     String name
     private boolean locked = false;
+
 
     FTPProject(FTPRoot root, String name) {
         super(PROJECT)
@@ -42,7 +45,7 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
     }
 
     public void unlock() {
-        locked  = false
+        locked = false
     }
 
     @Override
@@ -74,6 +77,16 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
         Long size = list().collect { it.size }.sum() as Long
         if (size == null) return 0
         return size
+    }
+
+    public void write(FTPTape tape) {
+        list().each {
+            def hash = it.hash()
+            println BaseEncoding.base32().encode(hash)
+            tape.device.description.add(
+                    it.getTitle(), hash, it.size
+            )
+        }
     }
 
     @Override

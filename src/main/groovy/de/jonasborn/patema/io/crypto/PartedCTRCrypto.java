@@ -49,15 +49,15 @@ class PartedCTRCrypto implements PartedCrypto {
     @Override
     public void setPassword(String password) throws Exception{
         byte[] salt = Hashing.murmur3_128().hashString(password, Charsets.UTF_8).asBytes();
-        System.out.println(BaseEncoding.base32Hex().encode(salt));
+        //System.out.println(BaseEncoding.base32Hex().encode(salt));
         PBEKeySpec keySpec = new PBEKeySpec(password.toCharArray(), salt, 1000, 128);
         SecretKey k = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1").generateSecret(keySpec);
         key = new SecretKeySpec(k.getEncoded(), "AES");
-        System.out.println(BaseEncoding.base32Hex().encode(key.getEncoded()));
+        //System.out.println(BaseEncoding.base32Hex().encode(key.getEncoded()));
         PBEKeySpec ivSpec = new PBEKeySpec(password.toCharArray(), salt, 1000, 16);
         SecretKey ivKey = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1").generateSecret(ivSpec);
         iv = new IvParameterSpec(ivKey.getEncoded());
-        System.out.println(BaseEncoding.base32Hex().encode(iv.getIV()));
+        //System.out.println(BaseEncoding.base32Hex().encode(iv.getIV()));
 
         this.encryptionCache = new PartedCTRCryptoCache(Cipher.ENCRYPT_MODE, key, iv);
         this.decryptionCache = new PartedCTRCryptoCache(Cipher.DECRYPT_MODE, key, iv);

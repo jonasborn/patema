@@ -17,16 +17,20 @@
 
 package de.jonasborn.patema.ftp
 
+import de.jonasborn.patema.tape.Tape
+import de.jonasborn.patema.tape.Tapes
+
 import static de.jonasborn.patema.ftp.FTPElement.Type.TAPE
 
 public class FTPTape extends FTPDirectory<FTPTapeFile> {
     FTPRoot root
-    String device
+    String devicePath
+    Tape device
 
-    FTPTape(FTPRoot root, String device) {
+    FTPTape(FTPRoot root, String devicePath) {
         super(TAPE)
         this.root = root
-        this.device = device
+        this.devicePath = devicePath
     }
 
     @Override
@@ -36,7 +40,7 @@ public class FTPTape extends FTPDirectory<FTPTapeFile> {
 
     @Override
     boolean exists() {
-        return true
+        return Tapes.get(devicePath) != null
     }
 
     @Override
@@ -46,12 +50,16 @@ public class FTPTape extends FTPDirectory<FTPTapeFile> {
 
     @Override
     String getTitle() {
-        return "tape-" + device.split("/").last()
+        return "tape-" + devicePath.split("/").last()
     }
 
     @Override
     void delete() {
+        throw new IOException("Not implemented yet")
+    }
 
+    public Tape getDevice() {
+        return Tapes.get(devicePath)
     }
 
     public List<FTPTapeFile> list() {

@@ -31,4 +31,24 @@ public class TapeStatus {
     boolean dr_open = false;
     boolean in_rep_en = false;
     boolean cln = false;
+
+
+    @Override
+    public String toString() {
+        return "TapeStatus{" +
+                "eof=" + eof +
+                ", bot=" + bot +
+                ", eot=" + eot +
+                ", sm=" + sm +
+                ", eod=" + eod +
+                ", wr_prot=" + wr_prot +
+                ", online=" + online +
+                ", d_6250=" + d_6250 +
+                ", d_1600=" + d_1600 +
+                ", d_800=" + d_800 +
+                ", dr_open=" + dr_open +
+                ", in_rep_en=" + in_rep_en +
+                ", cln=" + cln +
+                '}';
+    }
 }

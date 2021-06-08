@@ -102,4 +102,7 @@ of MinimalFTP is currently included in this project. All changes on the original
 are documented and I'm going to publish the changes to the main repo afterwards.
 The source of MinimalFTP is licensed using the Apache license in version 2 - see MINIMALFTP-LICENSE.
 
+### vbindiff
+Thanks for helping me to debug the whole filesystem!
+See https://www.cjmweb.net/vbindiff/ for a great out-of-the-box binary diff tool!
 

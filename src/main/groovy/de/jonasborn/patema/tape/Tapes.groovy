@@ -20,23 +20,57 @@ package de.jonasborn.patema.tape
 import de.jonasborn.patema.info.Sys
 import jtape.BasicTapeDevice
 
+import java.util.logging.LogManager
+import java.util.logging.Logger
+
 class Tapes {
 
-    public static List<Tape> list() {
-        Sys.lsscsi().findAll {it.get("type") == "Sequential-Access"}.collect {
-            new Tape(
-                    it.get("vendor"),
-                    it.get("path")
+    private static Logger logger = Logger.getLogger("Tapes")
 
-            )
+    private static final directory = new File("/dev/tape/by-id/")
+
+    public static void checkRequirements() {
+        //TODO Check if /dev/tape exists when no device is attached
+    }
+
+    public static Tape get(String path) {
+        return list().find {it.path = path}
+    }
+
+    private static String extractId(File file) {
+        try {
+            def name = file.name
+            return name.split("-")[1]
+        } catch (Exception ignored) {
+            return UUID.randomUUID().toString().replace("-", "");
         }
     }
 
+    public static List<Tape> list() {
+        directory.listFiles().findAll {it.path.contains("nst")}.collect {
+            if (it.exists()) {
+                try {
+                    logger.finest("Preparing tape ${it.getPath()}")
+                    return new Tape(extractId(it), it.getCanonicalPath())
+                } catch (Exception e) {
+                    logger.warning("Unable to prepare tape ${it.getPath()}: ${e.getMessage()}")
+                }
+            }
+            return null
+        }.findAll { it != null }
+    }
+
     static void main(String[] args) {
-        list().each {
-            println it.path
-        }
-        BasicTapeDevice.prepare()
+
+        //BasicTapeDevice.prepare()
+
+        println new File("/dev/tape/by-id/").listFiles()
+
+        def path = new File("/dev/tape/by-id/scsi-350050763120c95a7-nst").getCanonicalPath()
+        println path
+        def bt = new BasicTapeDevice(path)
+
+        println bt.status
     }
 
 }

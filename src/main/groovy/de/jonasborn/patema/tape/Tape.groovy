@@ -2,8 +2,8 @@ package de.jonasborn.patema.tape
 
 
 import jtape.BasicTapeDevice
-import jtape.FixedBufferedOutputStream
-import jtape.StreamCopier
+
+import java.util.logging.Logger
 
 class Tape {
 
@@ -20,20 +20,37 @@ class Tape {
     device.close()
      */
 
-    String vendor
+    Logger logger;
+
+    String id
     String path
 
+    public TapeDescription description
     BasicTapeDevice device;
 
-    Tape(String vendor, String path) {
-        this.vendor = vendor
+
+    Tape(String id, String path) {
+        this.id = id
         this.path = path
-        this.device = new BasicTapeDevice("/dev/nst0")
-        TapeStatus status = device.getStatus()
-        println status.eof
-        println status.online
-        println status.in_rep_en
+        logger = Logger.getLogger("Tape-$id");
+        description = new TapeDescription()
+    }
+
+    public void initialize() {
+        try {
+            if (device == null) this.device = new BasicTapeDevice(path)
+        } catch (Exception e) {
+            logger.warning("Unable to initialize device $id: ${e.getMessage()}")
+        }
+    }
+
+    public void getDescription() {
 
 
     }
+
+    public void write(InputStream source) {
+
+    }
+
 }

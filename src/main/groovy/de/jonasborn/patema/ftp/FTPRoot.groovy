@@ -17,6 +17,8 @@
 
 package de.jonasborn.patema.ftp
 
+import de.jonasborn.patema.tape.Tapes
+
 import static de.jonasborn.patema.ftp.FTPElement.Type.ROOT
 
 public class FTPRoot extends FTPDirectory<FTPElement> {
@@ -62,7 +64,7 @@ public class FTPRoot extends FTPDirectory<FTPElement> {
             return new FTPProject(this, it.name)
         }
         list.addAll(
-                [new FTPTape(this, "/dev/st0")]
+                Tapes.list().collect {new FTPTape(this, it.path)}
         )
         return list
     }

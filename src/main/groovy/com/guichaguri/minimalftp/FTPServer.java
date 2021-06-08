@@ -40,7 +40,7 @@ public class FTPServer implements Closeable {
 
     protected IUserAuthenticator auth = null;
     protected int idleTimeout = 5 * 60 * 1000; // 5 minutes
-    protected int bufferSize = 1024 * 1024 * 3;
+    protected int bufferSize = 1024 *1024 *3;
     protected SSLContext ssl = null;
     protected boolean explicitSecurity = true;
 

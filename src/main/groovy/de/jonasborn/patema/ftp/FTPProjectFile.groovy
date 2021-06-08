@@ -17,12 +17,16 @@
 
 package de.jonasborn.patema.ftp
 
-
+import com.google.common.io.Files
 import de.jonasborn.patema.io.PartedFileInputStream
 import de.jonasborn.patema.io.PartedFileOutputStream
 import de.jonasborn.patema.io.PartedCompressedCryptoFile
 
 import groovy.transform.CompileStatic
+import jtape.FixedBufferedOutputStream
+
+import java.security.DigestOutputStream
+import java.security.MessageDigest
 
 class FTPProjectFile extends FTPElement {
 
@@ -74,6 +78,21 @@ class FTPProjectFile extends FTPElement {
 
     public long getSize() {
         return unPackedFile.getSize();
+    }
+
+    public void finished() {
+        Files.move(delegate, new File(delegate.parentFile, delegate.name + ".test"))
+    }
+
+    public byte[] hash() {
+        MessageDigest digest = MessageDigest.getInstance("MD5")
+        def is = read(0)
+        def read = 0;
+        def buffer = new byte[1024]
+        while ((read = is.read(buffer)) != -1) {
+            digest.update(buffer, 0, read)
+        }
+        return digest.digest()
     }
 
     @CompileStatic

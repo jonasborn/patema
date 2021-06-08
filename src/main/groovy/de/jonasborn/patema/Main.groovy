@@ -27,7 +27,7 @@ class Main {
         File root = new File("root");
         def auth = new FTPAuth(root);
         FTPServer server = new FTPServer(auth);
-        server.listenSync(21);
+        server.listenSync(2121);
 
     }
 }

@@ -17,19 +17,33 @@
 
 package de.jonasborn.patema.io
 
+import com.google.common.cache.CacheBuilder
+import com.google.common.cache.CacheLoader
+import com.google.common.cache.LoadingCache
 import de.jonasborn.patema.io.crypto.PartedCTRCrypto
 import de.jonasborn.patema.io.crypto.PartedCrypto
 import de.jonasborn.patema.io.crypto.PartedECBCrypto
 
+import java.util.concurrent.TimeUnit
+
 class PartedCompressedCryptoFile extends PartedFile{
+
+    private static LoadingCache<String, PartedCrypto> cryptoCache = CacheBuilder.newBuilder()
+    .expireAfterAccess(5, TimeUnit.MINUTES).build(new CacheLoader<String, PartedCrypto>() {
+        @Override
+        PartedCrypto load(String key) throws Exception {
+            def c = new PartedECBCrypto();
+            c.setPassword(key)
+            return c
+        }
+    })
 
     File directory
     PartedCrypto crypto;
 
     PartedCompressedCryptoFile(File directory, String password) {
         this.directory = directory
-        crypto = new PartedECBCrypto()
-        crypto.setPassword(password)
+        crypto = cryptoCache.get(password)
     }
 
     @Override
@@ -46,9 +60,10 @@ class PartedCompressedCryptoFile extends PartedFile{
         {
             @Override
             public int compare(File o1, File o2) {
-                def i1 = (o1 as File).name.replaceAll("[^0-9.]", "")
-                def i2 = (o2 as File).name.replaceAll("[^0-9.]", "")
-                return i1 <=> i2
+                def i1 = (o1 as File).name.replaceAll("[^0-9]", "")
+                def i2 = (o2 as File).name.replaceAll("[^0-9]", "")
+
+                return Integer.parseInt(i1) <=> Integer.parseInt(i2)
             }
         })
         return list

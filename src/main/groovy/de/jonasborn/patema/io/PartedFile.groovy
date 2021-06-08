@@ -17,9 +17,11 @@
 
 package de.jonasborn.patema.io
 
-
+import com.google.common.io.BaseEncoding
+import de.jonasborn.patema.util.Buffer
 import groovy.transform.CompileStatic
 
+import javax.servlet.ServletOutputStream
 import java.nio.ByteBuffer
 import java.util.logging.Logger
 
@@ -48,7 +50,6 @@ abstract class PartedFile {
     }
 
 
-
     public void seek(Long position) {
         this.position = position
     }
@@ -75,7 +76,7 @@ abstract class PartedFile {
         loadSizes()
         int index = 0
         final Iterator<Map.Entry<File, Long>> iter = sizes.iterator()
-        final Long sum = 0;
+        Long sum = 0;
         if (!iter.hasNext()) return null
         Map.Entry<File, Long> element = iter.next()
         sum += element.value
@@ -102,12 +103,14 @@ abstract class PartedFile {
      */
     @CompileStatic
     public byte[] read(int amount) {
+        println sizes
         println "Attempting to read ${amount}"
         def current = getReadChunk(position) //Get the positioning
         if (current == null) return null //When there is no file anymore, exit
         //Get the file position by subtracting all other file sizes from the current position
         int startOfFile = (position - current.position) as int
         def file = current.file
+        println "AMOUNT $amount FILE $file POSITION $position"
         def bout = new ByteArrayOutputStream(amount) //Target to write to, amount is the max to use
         def written = 0
         def data = unpack(current.index, file.bytes) //Load the bytes
@@ -137,37 +140,37 @@ abstract class PartedFile {
         return bout.toByteArray()
     }
 
+    // 1111111111111333333333333300000000000000000000000 -------------------- Current file content
+    // |___________| -------------------------------------------------------- Area to skip
+    //              |___________| ------------------------------------------- Will be overwritten
+    // |________________________| ------------------------------------------- Data from file
+    //                           |_____________________| -------------------- Empty
+    // |_______________________________________________| -------------------- Max file size
+    //              4444444444444444444444444444444444442222222222222222222
+    //              |__________________________________| -------------------- Data to write for current file
+    //                                                 |__________________| - Data for next file
+    //              |_____________________________________________________| - Data total
+
     @CompileStatic
     public synchronized void write(byte[] data) {
         final PartedFileChunk positioning = getWriteChunk(position)
         final int index = (int) (position / partSize)
+
         final File file = positioning.file
         final int startOfFile = (int) (position - (index * partSize))
-        final ByteBuffer buffer = ByteBuffer.allocate(partSize)
-        if (file.exists()) {
-            buffer.put(unpack(index, file.bytes))
-        }
-        buffer.position(startOfFile)
 
-        byte[] now = data;
-        byte[] then = null;
-        if (data.length > buffer.remaining()) {
-            now = new byte[buffer.remaining()]
-            then = new byte[data.length - buffer.remaining()]
-            buffer.get(now)
-            buffer.get(then)
-        }
-
-        buffer.put(now)
-        final byte[] output = new byte[buffer.position()]
-        buffer.rewind()
-        buffer.get(output)
-        final byte[] content = pack(index, output)
-        file.setBytes(content)
-        position += now.length
-        sizes = null
-        if (then != null) write(then)
-
+        Buffer dataBuffer = new Buffer(data);
+        Buffer fileBuffer = new Buffer(partSize)
+        if (file.exists()) fileBuffer.put(unpack(index, file.bytes))
+        int length = fileBuffer.position()
+        fileBuffer.position(startOfFile)
+        byte[] toWrite = dataBuffer.getRemainingOrMax(fileBuffer.remaining())
+        fileBuffer.put(toWrite)
+        position += toWrite.length
+        length = Math.max(length, fileBuffer.position())
+        fileBuffer.rewind()
+        file.setBytes(pack(index, fileBuffer.getArray(length)))
+        if (dataBuffer.remaining() > 0) write(dataBuffer.getRemaining())
     }
 
     public void close() {

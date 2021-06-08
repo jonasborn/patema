@@ -17,6 +17,8 @@
 
 package de.jonasborn.patema.io
 
+import com.google.common.io.BaseEncoding
+
 class PartedFileOutputStream extends OutputStream {
 
     PartedFile file

@@ -130,6 +130,7 @@ class FTPFileSystem implements IFileSystem<FTPElement> {
 
     @Override
     void mkdirs(FTPElement file) throws IOException {
+        println file.class
         if (file.isProject()) file.asProject().mkdir()
         else throw new IOException("Only projects are allowed")
     }
@@ -141,7 +142,11 @@ class FTPFileSystem implements IFileSystem<FTPElement> {
 
     @Override
     void rename(FTPElement from, FTPElement to) throws IOException {
-
+        if (from.isProject() && to.parent.isTape()) {
+            from.asProject().write(to.getParent().asTape()) //RUN ASYNC
+        } else {
+            throw new IOException("Not allowed")
+        }
     }
 
     @Override
@@ -156,6 +161,6 @@ class FTPFileSystem implements IFileSystem<FTPElement> {
 
     @Override
     void finishedFile(FTPElement file) {
-
+        if (file.isProjectFile()) file.asProjectFile().finished()
     }
 }
