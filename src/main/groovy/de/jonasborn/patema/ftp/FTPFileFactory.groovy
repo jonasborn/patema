@@ -17,6 +17,11 @@
 
 package de.jonasborn.patema.ftp
 
+import de.jonasborn.patema.ftp.project.FTPProject
+import de.jonasborn.patema.ftp.project.FTPProjectFile
+import de.jonasborn.patema.ftp.tape.FTPTape
+import de.jonasborn.patema.ftp.tape.FTPTapeFile
+
 class FTPFileFactory {
 
     FTPConfig config;

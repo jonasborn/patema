@@ -143,7 +143,15 @@ class FTPFileSystem implements IFileSystem<FTPElement> {
     @Override
     void rename(FTPElement from, FTPElement to) throws IOException {
         if (from.isProject() && to.parent.isTape()) {
-            from.asProject().write(to.getParent().asTape()) //RUN ASYNC
+            def project = from.asProject()
+            if (!project.locked) {
+                //RUN ASYNC
+                project.locked = true
+                project.write(to.getParent().asTape())
+                project.locked = false
+            } else {
+                throw new IOException("Project is currently in use and locked, please wait for the last operation to complete")
+            }
         } else {
             throw new IOException("Not allowed")
         }

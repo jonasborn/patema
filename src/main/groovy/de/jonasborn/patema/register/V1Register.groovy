@@ -15,47 +15,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.tape
+package de.jonasborn.patema.register
 
-import com.esotericsoftware.kryo.Kryo
-import com.esotericsoftware.kryo.io.Input
-import com.esotericsoftware.kryo.io.Output
+
 import com.google.common.hash.Hashing
 import com.google.common.io.BaseEncoding
 
 import java.nio.charset.Charset
 
-class TapeDescription {
-
-    static Kryo kryo
-
-    static {
-        kryo = new Kryo()
-        kryo.register(TapeDescription.class)
-        kryo.register(LinkedList.class)
-        kryo.register(DescriptionFile.class)
-        kryo.register(byte[].class)
-    }
-
-    public static byte[] pack(TapeDescription description) {
-        ByteArrayOutputStream bout = new ByteArrayOutputStream()
-        Output output = new Output(bout)
-        kryo.writeObject(output, description)
-        output.close()
-        return bout.toByteArray()
-    }
-
-    public static TapeDescription unpack(byte[] data) {
-        Input input = new Input(data)
-        kryo.readObject(input, TapeDescription.class)
-    }
+class V1Register implements Register {
 
     String id
     LinkedList<DescriptionFile> files = []
-    
+
+    V1Register(String id) {
+        this.id = id
+    }
+
+    @Override
+    int getVersion() {
+        return 1
+    }
+
     public void add(String name, byte[] md5, long length) {
         files.add(new DescriptionFile(name, md5, length))
     }
+
 
     public static class DescriptionFile {
         String name
@@ -67,12 +52,6 @@ class TapeDescription {
             this.hash = hash
             this.length = length
         }
-    }
-
-    static void main(String[] args) {
-        def des = new TapeDescription()
-        des.add("Hallo.text", Hashing.md5().hashString("12345", Charset.defaultCharset()).asBytes(), 123)
-        println BaseEncoding.base64().encode(pack(des))
     }
 
 

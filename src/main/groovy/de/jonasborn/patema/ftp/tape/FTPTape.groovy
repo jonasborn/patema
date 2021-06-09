@@ -15,8 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.ftp
+package de.jonasborn.patema.ftp.tape
 
+import de.jonasborn.patema.ftp.FTPDirectory
+import de.jonasborn.patema.ftp.FTPElement
+import de.jonasborn.patema.ftp.FTPRoot
 import de.jonasborn.patema.tape.Tape
 import de.jonasborn.patema.tape.Tapes
 
@@ -68,6 +71,11 @@ public class FTPTape extends FTPDirectory<FTPTapeFile> {
                 new FTPTapeFile(this, "b"),
                 new FTPTapeFile(this, "c"),
         ]
+    }
+
+    public void prepare() throws IOException {
+        device = Tapes.get(devicePath)
+        device.initialize()
     }
 }
 

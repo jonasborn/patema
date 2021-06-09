@@ -17,6 +17,11 @@
 
 package de.jonasborn.patema.ftp
 
+import de.jonasborn.patema.ftp.project.FTPProject
+import de.jonasborn.patema.ftp.project.FTPProjectFile
+import de.jonasborn.patema.ftp.tape.FTPTape
+import de.jonasborn.patema.ftp.tape.FTPTapeFile
+
 import static de.jonasborn.patema.ftp.FTPElement.Type.*
 
 abstract class FTPElement {

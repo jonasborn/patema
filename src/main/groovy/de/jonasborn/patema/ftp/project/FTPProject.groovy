@@ -15,38 +15,39 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.ftp
+package de.jonasborn.patema.ftp.project
 
 import com.google.common.io.BaseEncoding
-import de.jonasborn.patema.tape.TapeDescription
+import de.jonasborn.patema.ftp.FTPDirectory
+import de.jonasborn.patema.ftp.FTPElement
+import de.jonasborn.patema.ftp.FTPRoot
+import de.jonasborn.patema.ftp.tape.FTPTape
+import de.jonasborn.patema.register.V1Register
 import de.jonasborn.patema.util.FileUtils
+
+import java.util.logging.Logger
 
 import static de.jonasborn.patema.ftp.FTPElement.Type.PROJECT
 
 public class FTPProject extends FTPDirectory<FTPProjectFile> {
 
+    Logger logger;
 
     File delegate
     FTPRoot root;
     String name
-    private boolean locked = false;
+    public boolean locked = false;
 
+    private V1Register register
 
     FTPProject(FTPRoot root, String name) {
         super(PROJECT)
         this.root = root
         this.name = name.replaceAll("\\[.*\\]", "")
         this.delegate = new File(root.delegate, this.name)
+        this.logger = Logger.getLogger("FTPProject-" + name)
     }
 
-
-    public void lock() {
-        locked = true
-    }
-
-    public void unlock() {
-        locked = false
-    }
 
     @Override
     String getPath() {
@@ -79,13 +80,16 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
         return size
     }
 
-    public void write(FTPTape tape) {
-        list().each {
-            def hash = it.hash()
-            println BaseEncoding.base32().encode(hash)
-            tape.device.description.add(
-                    it.getTitle(), hash, it.size
-            )
+    public void write(FTPTape tape) throws Exception{
+        try {
+            def device = tape.getDevice()
+            if (device == null) throw new IOException("Unable to find device " + tape.getDevicePath())
+            device.initialize()
+            println "WRITING REGISTER"
+            device.writeRegister(register, root.config.password)
+            println "REGISTER WRITTEN"
+        } catch (Exception e) {
+            e.printStackTrace()
         }
     }
 
@@ -103,6 +107,12 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
         delegate.listFiles().collect {
             return new FTPProjectFile(this, it.name)
         }
+    }
+
+    //TODO ADD READ WRITE ADD DELETE REGISTER FUNCTIONS
+    //Write without encryption, not needed
+
+    public void writeRegister() {
     }
 
 

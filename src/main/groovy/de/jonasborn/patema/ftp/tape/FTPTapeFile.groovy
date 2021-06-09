@@ -15,43 +15,35 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.ftp
+package de.jonasborn.patema.ftp.tape
 
+import de.jonasborn.patema.ftp.FTPElement
 import de.jonasborn.patema.ftp.project.FTPProject
-import de.jonasborn.patema.ftp.tape.FTPTape
-import de.jonasborn.patema.tape.Tapes
 
-import static de.jonasborn.patema.ftp.FTPElement.Type.ROOT
+class FTPTapeFile extends FTPElement {
 
-public class FTPRoot extends FTPDirectory<FTPElement> {
-    FTPConfig config
-    File delegate
+    FTPTape tape;
+    String title
 
-    FTPRoot(FTPConfig config, File delegate) {
-        super(ROOT)
-        assert delegate != null
-        this.config = config
-        this.delegate = delegate
+    FTPTapeFile(FTPTape tape, String title) {
+        super(Type.TAPE_FILE)
+        this.tape = tape
+        this.title = title
     }
 
     @Override
     String getPath() {
-        return "/"
+        return tape.getPath() + "/" + title
     }
 
     @Override
     boolean exists() {
-        return true
+        return false
     }
 
     @Override
     FTPElement getParent() {
-        return this //Or null or sth. else
-    }
-
-    @Override
-    String getTitle() {
-        return "root"
+        return tape
     }
 
     @Override
@@ -59,15 +51,12 @@ public class FTPRoot extends FTPDirectory<FTPElement> {
 
     }
 
-    @Override
-    List<FTPElement> list() {
-        def list = []
-        list.addAll delegate.listFiles().findAll { it.isDirectory() }.collect() {
-            return new FTPProject(this, it.name)
-        }
-        list.addAll(
-                Tapes.list().collect {new FTPTape(this, it.path)}
-        )
-        return list
+    long getSize() {
+        return 0
     }
+
+    public void write(FTPProject project) {
+        project.lock()
+    }
+
 }

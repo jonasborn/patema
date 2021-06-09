@@ -23,6 +23,7 @@ import groovy.transform.CompileStatic
 
 import javax.servlet.ServletOutputStream
 import java.nio.ByteBuffer
+import java.security.MessageDigest
 import java.util.logging.Logger
 
 abstract class PartedFile {
@@ -175,5 +176,16 @@ abstract class PartedFile {
 
     public void close() {
 
+    }
+
+    public byte[] hash() {
+        MessageDigest digest = MessageDigest.getInstance("MD5")
+        def list = listFiles()
+        for (i in 0..<list.size()) {
+            def element = list[i]
+            def data = unpack(i, element.bytes)
+            digest.update(data)
+        }
+        return digest.digest()
     }
 }

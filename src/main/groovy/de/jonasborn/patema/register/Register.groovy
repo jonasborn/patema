@@ -15,45 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.ftp
+package de.jonasborn.patema.register
 
-class FTPTapeFile extends FTPElement {
+interface Register {
 
-    FTPTape tape;
-    String title
 
-    FTPTapeFile(FTPTape tape, String title) {
-        super(Type.TAPE_FILE)
-        this.tape = tape
-        this.title = title
-    }
-
-    @Override
-    String getPath() {
-        return tape.getPath() + "/" + title
-    }
-
-    @Override
-    boolean exists() {
-        return false
-    }
-
-    @Override
-    FTPElement getParent() {
-        return tape
-    }
-
-    @Override
-    void delete() {
-
-    }
-
-    long getSize() {
-        return 0
-    }
-
-    public void write(FTPProject project) {
-        project.lock()
-    }
+    public int getVersion()
 
 }

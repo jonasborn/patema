@@ -15,17 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.ftp
+package de.jonasborn.patema.ftp.project
 
-import com.google.common.io.Files
+
+import de.jonasborn.patema.ftp.FTPElement
 import de.jonasborn.patema.io.PartedFileInputStream
 import de.jonasborn.patema.io.PartedFileOutputStream
 import de.jonasborn.patema.io.PartedCompressedCryptoFile
 
 import groovy.transform.CompileStatic
-import jtape.FixedBufferedOutputStream
 
-import java.security.DigestOutputStream
 import java.security.MessageDigest
 
 class FTPProjectFile extends FTPElement {
@@ -35,7 +34,7 @@ class FTPProjectFile extends FTPElement {
     File delegate;
     FTPProject project;
     String title;
-    PartedCompressedCryptoFile unPackedFile;
+    PartedCompressedCryptoFile parted;
     PartedFileOutputStream cout
     PartedFileInputStream cin;
 
@@ -53,7 +52,7 @@ class FTPProjectFile extends FTPElement {
         this.project = project
         this.delegate = new File(project.delegate, title)
         if (!delegate.exists()) delegate.mkdir()
-        this.unPackedFile = new PartedCompressedCryptoFile(delegate, project.getRoot().getConfig().getPassword())
+        this.parted = new PartedCompressedCryptoFile(delegate, project.getRoot().getConfig().getPassword())
     }
 
     @Override
@@ -77,11 +76,12 @@ class FTPProjectFile extends FTPElement {
     }
 
     public long getSize() {
-        return unPackedFile.getSize();
+        return parted.getSize();
     }
 
     public void finished() {
-        Files.move(delegate, new File(delegate.parentFile, delegate.name + ".test"))
+        //TODO USE NEW ADD FUNCTION FROM PROJECT
+        project.register.add(this.title, parted.hash(), parted.getSize())
     }
 
     public byte[] hash() {
@@ -97,14 +97,14 @@ class FTPProjectFile extends FTPElement {
 
     @CompileStatic
     public PartedFileInputStream read(long start) {
-        if (cin == null) cin = new PartedFileInputStream(unPackedFile)
+        if (cin == null) cin = new PartedFileInputStream(parted)
         cin.seek(start)
         return cin
     }
 
     @CompileStatic
     public PartedFileOutputStream write(long start) {
-        if (cout == null) cout = new PartedFileOutputStream(unPackedFile)
+        if (cout == null) cout = new PartedFileOutputStream(parted)
         cout.seek(start)
         return cout
     }
