@@ -17,9 +17,7 @@
 
 package de.jonasborn.patema.ftp.project
 
-import com.google.common.cache.CacheBuilder
-import com.google.common.cache.LoadingCache
-import com.google.common.io.BaseEncoding
+
 import de.jonasborn.patema.ftp.FTPDirectory
 import de.jonasborn.patema.ftp.FTPElement
 import de.jonasborn.patema.ftp.FTPRoot
@@ -30,21 +28,21 @@ import de.jonasborn.patema.register.Registers
 import de.jonasborn.patema.register.V1Register
 import de.jonasborn.patema.register.V1RegisterEntry
 import de.jonasborn.patema.util.FileUtils
-
-import java.util.logging.Logger
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 
 import static de.jonasborn.patema.ftp.FTPElement.Type.PROJECT
 
 public class FTPProject extends FTPDirectory<FTPProjectFile> {
 
 
-    Logger logger;
+    Logger logger = LogManager.getLogger(FTPProject.class)
 
     File delegate
     FTPRoot root;
     String name
     public boolean locked = false;
-    public boolean accessable = true
+    public boolean accessible = true
     File tokenFile
 
     V1Register register
@@ -55,24 +53,30 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
         this.root = root
         this.name = name.replaceAll("\\[.*\\]", "")
         this.delegate = new File(root.delegate, this.name)
-        this.logger = Logger.getLogger("FTPProject-" + name)
+
         this.registerFile = new File(delegate, "register.ptmas")
         this.tokenFile = new File(delegate, "token.patmas")
         try {
             prepare()
         } catch (Exception e) {
-            accessable = false
+            accessible = false
         }
     }
 
     private void prepare() {
         try {
-            if (register == null) register = readRegister()
+            if (register == null) {
+                register = readRegister()
+                logger.debug("Loading register from file", this)
+            }
+
             if (register == null) {
                 register = new V1Register(getTitle())
                 writeRegister()
+                logger.debug("Created new register for {}", this)
             }
         } catch (Exception e) {
+            logger.debug("Unable to create load/create register", this)
             throw new ProjectAccessException("Unable to access project, wrong password or corrupted data")
         }
     }
@@ -100,7 +104,7 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
     @Override
     String getTitle() {
         if (locked) return name + "[locked]"
-        if (!accessable) return name + "[inaccessible]"
+        if (!accessible) return name + "[inaccessible]"
         return name + "[" + FileUtils.humanReadableByteCountBin(getSize()) + "]"
     }
 
@@ -114,10 +118,15 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
         try {
             def device = tape.getDevice()
             if (device == null) throw new IOException("Unable to find device " + tape.getDevicePath())
+            logger.info("Writing {} to {}", this, tape)
+            logger.debug("Initializing device {}", tape)
             device.initialize()
-            println "WRITING REGISTER"
+            logger.debug("Writing register from {} to {}", this, tape)
             device.writeRegister(register, root.config.password)
-            println "REGISTER WRITTEN"
+            logger.debug("Successfully wrote register {} to {}", this, tape)
+
+            //Load all files from directory, each as a PartedRawFile and then dump them to the tape with markers
+
         } catch (Exception e) {
             e.printStackTrace()
         }
@@ -133,7 +142,7 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
     }
 
     public List<FTPProjectFile> list() {
-        if (!delegate.exists() || !accessable) return []
+        if (!delegate.exists() || !accessible) return []
         delegate.listFiles().collect {
             return new FTPProjectFile(this, it.name)
         }

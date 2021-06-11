@@ -17,12 +17,26 @@
 
 package de.jonasborn.patema.ftp
 
+import com.google.common.cache.CacheBuilder
+import com.google.common.cache.CacheLoader
+import com.google.common.cache.LoadingCache
 import de.jonasborn.patema.ftp.project.FTPProject
 import de.jonasborn.patema.ftp.project.FTPProjectFile
 import de.jonasborn.patema.ftp.tape.FTPTape
 import de.jonasborn.patema.ftp.tape.FTPTapeFile
 
+import java.util.concurrent.TimeUnit
+
 class FTPFileFactory {
+
+    LoadingCache<String, FTPProject> projectCache = CacheBuilder.newBuilder()
+            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .build(new CacheLoader<String, FTPProject>() {
+                @Override
+                FTPProject load(String key) throws Exception {
+                    return new FTPProject(root(), key)
+                }
+            })
 
     FTPConfig config;
     File delegate
@@ -37,7 +51,7 @@ class FTPFileFactory {
     }
 
     public FTPProject project(String title) {
-        return new FTPProject(root(), title)
+        return projectCache.get(title)
     }
 
     public FTPTape tape(String path) {

@@ -17,7 +17,7 @@
 
 package de.jonasborn.patema.io
 
-class PartedRawFile extends PartedFile{
+class PartedRawFile extends PartedFile {
 
     File directory
 
@@ -34,7 +34,7 @@ class PartedRawFile extends PartedFile{
     List<File> listFiles() {
         List<File> list = this.directory.listFiles()
         if (list == null) return []
-        list = list.findAll {it.name.endsWith(".ptma")}
+        list = list.findAll { it.name.endsWith(".ptma") }
         list.sort(new Comparator<File>()
         {
             @Override
@@ -67,4 +67,8 @@ class PartedRawFile extends PartedFile{
         return data
     }
 
+    @Override
+    String getName() {
+        return directory.name
+    }
 }

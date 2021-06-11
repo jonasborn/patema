@@ -20,15 +20,17 @@ package de.jonasborn.patema.io
 import com.google.common.io.BaseEncoding
 import de.jonasborn.patema.util.Buffer
 import groovy.transform.CompileStatic
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 
 import javax.servlet.ServletOutputStream
 import java.nio.ByteBuffer
 import java.security.MessageDigest
-import java.util.logging.Logger
+
 
 abstract class PartedFile {
 
-    private Logger logger = Logger.getLogger(PartedFile.name)
+    Logger logger = LogManager.getLogger(PartedFile.class)
 
     int partSize = 1024 * 1024
 
@@ -48,12 +50,10 @@ abstract class PartedFile {
 
     public abstract byte[] unpack(Integer file, byte[] data)
 
-    public void read(File file, byte[] bytes) {
-
-    }
-
+    public abstract String getName();
 
     public void seek(Long position) {
+        logger.debug("Setting position {} for {}", position, this)
         this.position = position
     }
 
@@ -112,14 +112,13 @@ abstract class PartedFile {
      */
     @CompileStatic
     public byte[] read(int amount) {
-        println sizes
-        println "Attempting to read ${amount}"
+        logger.debug("Attempting to read {} bytes from {}", amount, this)
         def current = getReadChunk(position) //Get the positioning
         if (current == null) return null //When there is no file anymore, exit
+        logger.debug("Identified chunk {} for read of {} bytes from {}", current.getIndex(), amount, this)
         //Get the file position by subtracting all other file sizes from the current position
         int startOfFile = (position - current.position) as int
         def file = current.file
-        println "AMOUNT $amount FILE $file POSITION $position"
         def bout = new ByteArrayOutputStream(amount) //Target to write to, amount is the max to use
         def written = 0
         def data = unpack(current.index, file.bytes) //Load the bytes
@@ -131,11 +130,14 @@ abstract class PartedFile {
         position += available //Add the read bytes to the position
         written += available; //Add the written bytes to the position
         while (amount > written) { //While there is still sth. to read left
+            logger.debug("Chunk {} fully read, moving on", current.getIndex())
             current = getReadChunk(position) //Get the positioning again
             if (current == null) return bout.toByteArray() //When no positioning is found, return the current result
             file = current.file
+            logger.debug("Attempting to read remaining {} bytes from chunk {} of {}", amount - written, current.getIndex(), this)
             if (!file.exists()) return bout.toByteArray() //When the file is missing, return the current result
             startOfFile = (position - current.position) as int //Set the start of file by substr. like above
+            logger.debug("Skipping to {} in chunk {} of {}", startOfFile, current.getIndex(), this)
             data = unpack(current.index, file.bytes) //Load the data
             //Take either the remaining size or the amount needed minus the already written bytes
             available = Math.min(data.length - startOfFile, amount - written)
@@ -159,6 +161,8 @@ abstract class PartedFile {
     //              |__________________________________| -------------------- Data to write for current file
     //                                                 |__________________| - Data for next file
     //              |_____________________________________________________| - Data total
+
+    //No logs given, this function is still too slow, need to investigate
 
     @CompileStatic
     public synchronized void write(byte[] data) {
@@ -195,5 +199,11 @@ abstract class PartedFile {
             digest.update(data)
         }
         return digest.digest()
+    }
+
+
+    @Override
+    public String toString() {
+        return "PartedFile{" + this.getName() + "}";
     }
 }

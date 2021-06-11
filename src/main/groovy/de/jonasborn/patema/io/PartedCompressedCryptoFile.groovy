@@ -99,6 +99,11 @@ class PartedCompressedCryptoFile extends PartedFile{
     }
 
     @Override
+    String getName() {
+        return directory.name
+    }
+
+    @Override
     void close() {
         def files = listFiles()
         for (int i = 0; i < files.size(); i++) {

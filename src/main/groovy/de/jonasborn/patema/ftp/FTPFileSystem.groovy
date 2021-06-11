@@ -29,12 +29,14 @@ class FTPFileSystem implements IFileSystem<FTPElement> {
     FTPConnection connection
     FTPConfig config
     FTPFileFactory factory;
+    String username
 
     FTPFileSystem(FTPConfig config, FTPConnection connection, File directory) {
         this.config = config
         factory = new FTPFileFactory(config, directory)
         this.connection = connection
-        logger = LogManager.getLogger("FTPFS-" + connection.getUsername())
+        this.username = connection.getUsername()
+        logger = LogManager.getLogger(FTPFileSystem.class)
     }
 
     @Override
@@ -44,30 +46,31 @@ class FTPFileSystem implements IFileSystem<FTPElement> {
 
     @Override
     String getPath(FTPElement file) {
-        logger.debug("Get path? {}: {}", file, file.getPath())
+        logger.debug("{} is requesting path for {}: {}", username, file, file.getPath())
         return file.getPath()
     }
 
     @Override
     boolean exists(FTPElement file) {
-        logger.debug("Exists? {}: {}", file, file.exists())
+        logger.debug("{} is requesting exists for {}: {}", username, file, file.exists())
         return file.exists()
     }
 
     @Override
     boolean isDirectory(FTPElement file) {
-        logger.debug("Is directory? {}: {}", file, file.isDirectory())
+        logger.debug("{} is requesting is directory for {}: {}", username, file, file.isDirectory())
         return file.isDirectory()
     }
 
     @Override
     int getPermissions(FTPElement file) {
-        logger.debug("Permissions? {}: {}", file, 0)
+        logger.debug("{} is requesting permissions for {}: {}", username, file, 0)
         return 0
     }
 
     @Override
     long getSize(FTPElement file) {
+        logger.debug("{} is requesting size for {}", username, file)
         if (file.isProjectFile()) return file.asProjectFile().size
         if (file.isTapeFile()) return file.asTapeFile().size
         return 0
@@ -105,6 +108,7 @@ class FTPFileSystem implements IFileSystem<FTPElement> {
 
     @Override
     FTPElement[] listFiles(FTPElement dir) throws IOException {
+        logger.debug("{} is requesting list of files for {}", username, dir)
         if (dir.isDirectory()) return dir.asDirectory().list()
         throw new IOException("Not a directory, can not list")
     }
@@ -119,47 +123,50 @@ class FTPFileSystem implements IFileSystem<FTPElement> {
     @Override
     FTPElement findFile(FTPElement cwd, String path) throws IOException {
         def found = findFile(cwd.path + "/" + path)
-        logger.debug("Find File? Cwd {}, path {}. Found: {}", cwd, path, found)
+        logger.debug("{} is searching file under cwd {} with path {}. Found: {}", username, cwd, path, found)
         return found
     }
 
     @Override
     InputStream readFile(FTPElement file, long start) throws IOException {
-        logger.debug("Read! File {} starting at {}", file, start)
+        logger.debug("{} is reading file {} starting at {}", username, file, start)
         if (file.isProjectFile()) return file.asProjectFile().read(start)
         throw new IOException("File access not allowed")
     }
 
     @Override
     OutputStream writeFile(FTPElement file, long start) throws IOException {
-        logger.debug("Write! File {} starting at {}", file, start)
+        logger.debug("{} is writing file {} starting at {}", username, file, start)
         if (file.isProjectFile()) return file.asProjectFile().write(start)
         throw new IOException("File access not allowed")
     }
 
     @Override
     void mkdirs(FTPElement file) throws IOException {
-        logger.debug("Mkdir? File {}", file)
+        logger.debug("{} is creating dir {}", username, file)
         if (file.isProject()) file.asProject().mkdir()
         else throw new IOException("Only projects are allowed")
     }
 
     @Override
     void delete(FTPElement file) throws IOException {
-        logger.debug("Delete? File {}", file)
+        logger.debug("{} is deleting file {}", username, file)
         file.delete()
     }
 
     @Override
     void rename(FTPElement from, FTPElement to) throws IOException {
+        logger.debug("{} is requesting rename from {} to {}", username, from, to)
         if (from.isProject() && to.parent.isTape()) {
             def project = from.asProject()
             if (!project.locked) {
                 //RUN ASYNC
+                logger.info("{} is triggering to write {} to {}", username, from, to)
                 project.locked = true
                 project.write(to.getParent().asTape())
                 project.locked = false
             } else {
+                logger.warn("{} is using project {}, which is currently locked", username, from)
                 throw new IOException("Project is currently in use and locked, please wait for the last operation to complete")
             }
         } else {
@@ -179,6 +186,7 @@ class FTPFileSystem implements IFileSystem<FTPElement> {
 
     @Override
     void finishedFile(FTPElement file) {
+        logger.info("{} successfully uploaded file {}", username, file)
         if (file.isProjectFile()) file.asProjectFile().finished()
     }
 }
