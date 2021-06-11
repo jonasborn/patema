@@ -81,7 +81,6 @@ class PartedCTRCryptoCache {
     }
 
     private CryptoCipher create(int i) throws Exception {
-        System.out.println("CREATING " + i);
         IvParameterSpec iv = createIv(i);
         CryptoCipher instance = Utils.getCipherInstance(transform, properties);
         instance.init(mode, key, iv);

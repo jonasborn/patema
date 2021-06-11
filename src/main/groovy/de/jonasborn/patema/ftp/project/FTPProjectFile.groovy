@@ -29,8 +29,6 @@ import java.security.MessageDigest
 
 class FTPProjectFile extends FTPElement {
 
-
-
     File delegate;
     FTPProject project;
     String title;
@@ -52,7 +50,12 @@ class FTPProjectFile extends FTPElement {
         this.project = project
         this.delegate = new File(project.delegate, title)
         if (!delegate.exists()) delegate.mkdir()
-        this.parted = new PartedCompressedCryptoFile(delegate, project.getRoot().getConfig().getPassword())
+        this.parted = new PartedCompressedCryptoFile(
+                delegate,
+                project.getRoot().getConfig().getPassword(),
+                project.register.iv,
+                project.register.salt
+        )
     }
 
     @Override
@@ -71,17 +74,23 @@ class FTPProjectFile extends FTPElement {
     }
 
     @Override
-    void delete() {
-        println delegate.deleteDir()
+    void delete() throws IOException {
+        project.unregisterFile(this)
+        delegate.deleteDir()
     }
 
-    public long getSize() {
-        return parted.getSize();
+    public Long getSize() {
+        def size = parted.getSize()
+        if (size == null) return -1
+        return size
+    }
+
+    public long getSizeOnMedia() {
+        return parted.getSizeOnMedia()
     }
 
     public void finished() {
-        //TODO USE NEW ADD FUNCTION FROM PROJECT
-        project.register.add(this.title, parted.hash(), parted.getSize())
+        project.registerFile(this)
     }
 
     public byte[] hash() {

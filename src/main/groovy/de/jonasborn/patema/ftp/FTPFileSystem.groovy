@@ -18,16 +18,23 @@
 
 package de.jonasborn.patema.ftp
 
+import com.guichaguri.minimalftp.FTPConnection
 import com.guichaguri.minimalftp.api.IFileSystem
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 
 class FTPFileSystem implements IFileSystem<FTPElement> {
 
+    Logger logger;
+    FTPConnection connection
     FTPConfig config
     FTPFileFactory factory;
 
-    FTPFileSystem(FTPConfig config, File directory) {
+    FTPFileSystem(FTPConfig config, FTPConnection connection, File directory) {
         this.config = config
         factory = new FTPFileFactory(config, directory)
+        this.connection = connection
+        logger = LogManager.getLogger("FTPFS-" + connection.getUsername())
     }
 
     @Override
@@ -37,24 +44,25 @@ class FTPFileSystem implements IFileSystem<FTPElement> {
 
     @Override
     String getPath(FTPElement file) {
-        println "GP: " + file.getPath()
+        logger.debug("Get path? {}: {}", file, file.getPath())
         return file.getPath()
     }
 
     @Override
     boolean exists(FTPElement file) {
-        println "EX: " + file
+        logger.debug("Exists? {}: {}", file, file.exists())
         return file.exists()
     }
 
     @Override
     boolean isDirectory(FTPElement file) {
-        println "DI: " + file + " - " + file.isDirectory()
+        logger.debug("Is directory? {}: {}", file, file.isDirectory())
         return file.isDirectory()
     }
 
     @Override
     int getPermissions(FTPElement file) {
+        logger.debug("Permissions? {}: {}", file, 0)
         return 0
     }
 
@@ -110,33 +118,35 @@ class FTPFileSystem implements IFileSystem<FTPElement> {
 
     @Override
     FTPElement findFile(FTPElement cwd, String path) throws IOException {
-        println "CWD: " + cwd + ", PTH: " + path + ", FFI: " + findFile(cwd.path + "/" + path)
-        return findFile(cwd.path + "/" + path)
+        def found = findFile(cwd.path + "/" + path)
+        logger.debug("Find File? Cwd {}, path {}. Found: {}", cwd, path, found)
+        return found
     }
 
     @Override
     InputStream readFile(FTPElement file, long start) throws IOException {
-        println "READ"
-        if (file.isProjectFile()) return file.asProjectFile().read( start)
+        logger.debug("Read! File {} starting at {}", file, start)
+        if (file.isProjectFile()) return file.asProjectFile().read(start)
         throw new IOException("File access not allowed")
     }
 
     @Override
     OutputStream writeFile(FTPElement file, long start) throws IOException {
-        println "WRITE: " + file
-        if (file.isProjectFile()) return file.asProjectFile().write( start)
+        logger.debug("Write! File {} starting at {}", file, start)
+        if (file.isProjectFile()) return file.asProjectFile().write(start)
         throw new IOException("File access not allowed")
     }
 
     @Override
     void mkdirs(FTPElement file) throws IOException {
-        println file.class
+        logger.debug("Mkdir? File {}", file)
         if (file.isProject()) file.asProject().mkdir()
         else throw new IOException("Only projects are allowed")
     }
 
     @Override
     void delete(FTPElement file) throws IOException {
+        logger.debug("Delete? File {}", file)
         file.delete()
     }
 

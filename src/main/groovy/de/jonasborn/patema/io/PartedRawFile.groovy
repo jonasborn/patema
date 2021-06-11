@@ -53,6 +53,11 @@ class PartedRawFile extends PartedFile{
     }
 
     @Override
+    Long getSizeOnMedia(File file) {
+        return file.size()
+    }
+
+    @Override
     byte[] pack(Integer integer, byte[] data) {
         return data
     }

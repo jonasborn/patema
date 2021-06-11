@@ -22,14 +22,25 @@ import com.google.common.hash.Hashing
 import com.google.common.io.BaseEncoding
 
 import java.nio.charset.Charset
+import java.security.SecureRandom
 
-class V1Register implements Register {
+class V1Register implements Register<V1RegisterEntry> {
 
+    private static SecureRandom random = new SecureRandom()
+    
     String id
-    LinkedList<DescriptionFile> files = []
+    byte[] salt;
+    byte[] iv;
+    LinkedList<RegisterEntry> entries = []
+
+    V1Register() {
+    }
 
     V1Register(String id) {
         this.id = id
+        salt = new byte[32]
+        random.nextBytes(salt)
+        iv = new byte[32]
     }
 
     @Override
@@ -37,21 +48,14 @@ class V1Register implements Register {
         return 1
     }
 
-    public void add(String name, byte[] md5, long length) {
-        files.add(new DescriptionFile(name, md5, length))
+    @Override
+    void addEntry(RegisterEntry entry) {
+        entries.add(entry)
     }
 
-
-    public static class DescriptionFile {
-        String name
-        byte[] hash
-        long length
-
-        DescriptionFile(String name, byte[] hash, long length) {
-            this.name = name
-            this.hash = hash
-            this.length = length
-        }
+    @Override
+    void removeEntry(RegisterEntry entry) {
+        entries.add(entry)
     }
 
 

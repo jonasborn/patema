@@ -21,6 +21,7 @@ package de.jonasborn.patema.io.crypto;
 import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
 import com.google.common.io.BaseEncoding;
+import de.jonasborn.patema.util.ByteUtils;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -31,10 +32,11 @@ import javax.crypto.spec.SecretKeySpec;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class PartedECBCrypto implements PartedCrypto{
+public class PartedECBCrypto implements PartedCrypto {
 
     SecretKeySpec key;
-    IvParameterSpec iv;
+    byte[] iv;
+    byte[] salt;
 
     Cipher encrypt;
     Cipher decrypt;
@@ -44,33 +46,30 @@ public class PartedECBCrypto implements PartedCrypto{
 
     private byte[] createIv(int i) throws NoSuchAlgorithmException {
         MessageDigest digest = MessageDigest.getInstance("MD5");
-        digest.update(iv.getIV());
+        digest.update(iv);
+        digest.update(salt);
         digest.update((byte) i);
         return digest.digest();
     }
 
-    public byte[] xor(byte[] iv, byte[] data) {
-        int position = 0;
-        byte[] output = new byte[data.length];
-        for (int i = 0; i < data.length; i++) {
-            if (position >= iv.length) position = 0;
-            output[i] = (byte) (iv[position] ^ data[i]);
-            position++;
-        }
-        return output;
-    }
 
+    /*
+    11.06.21: I thought about adding a salt multiple times. When ding this, I must calculate and store the salt on a other
+    place as this stream wont start at the first block. Probably using the register?
+     */
     @Override
-    public void setPassword(String password) throws Exception {
-        byte[] salt = Hashing.murmur3_128().hashString(password, Charsets.UTF_8).asBytes();
+    public void initialize(String password, byte[] iv, byte[] salt) throws Exception {
+        this.salt = salt;
+        this.iv = iv;
+        //byte[] salt = Hashing.murmur3_128().hashString(password, Charsets.UTF_8).asBytes();
         //System.out.println(BaseEncoding.base32Hex().encode(salt));
         PBEKeySpec keySpec = new PBEKeySpec(password.toCharArray(), salt, 1000, 128);
         SecretKey k = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1").generateSecret(keySpec);
         key = new SecretKeySpec(k.getEncoded(), "AES");
         //System.out.println(BaseEncoding.base32Hex().encode(key.getEncoded()));
-        PBEKeySpec ivSpec = new PBEKeySpec(password.toCharArray(), salt, 1000, 16 * 8);
-        SecretKey ivKey = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1").generateSecret(ivSpec);
-        iv = new IvParameterSpec(ivKey.getEncoded());
+        //PBEKeySpec ivSpec = new PBEKeySpec(password.toCharArray(), salt, 1000, 16 * 8);
+        //SecretKey ivKey = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1").generateSecret(ivSpec);
+        //iv = new IvParameterSpec(ivKey.getEncoded());
         //System.out.println(BaseEncoding.base32Hex().encode(iv.getIV()));
         final String transform = "AES/ECB/PKCS5Padding";
         encrypt = Cipher.getInstance(transform);
@@ -81,16 +80,15 @@ public class PartedECBCrypto implements PartedCrypto{
 
     public byte[] encrypt(int position, byte[] data) throws Exception {
         byte[] iv = createIv(position);
-        byte[] open = xor(iv, data);
+        byte[] open = ByteUtils.xor(iv, data);
         return encrypt.doFinal(open);
     }
 
-    public byte[] decrypt(int position, byte[] encrypted) throws Exception{
+    public byte[] decrypt(int position, byte[] encrypted) throws Exception {
         byte[] iv = createIv(position);
         byte[] decrypted = decrypt.doFinal(encrypted);
-        return xor(iv, decrypted);
+        return ByteUtils.xor(iv, decrypted);
     }
-
 
 
 }

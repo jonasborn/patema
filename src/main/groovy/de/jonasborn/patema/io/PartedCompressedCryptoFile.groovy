@@ -20,6 +20,7 @@ package de.jonasborn.patema.io
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import com.google.common.cache.LoadingCache
+import de.jonasborn.patema.header.Token
 import de.jonasborn.patema.io.crypto.PartedCrypto
 import de.jonasborn.patema.io.crypto.PartedECBCrypto
 import de.jonasborn.patema.util.XZUtils
@@ -28,12 +29,14 @@ import java.util.concurrent.TimeUnit
 
 class PartedCompressedCryptoFile extends PartedFile{
 
-    private static LoadingCache<String, PartedCrypto> cryptoCache = CacheBuilder.newBuilder()
-    .expireAfterAccess(5, TimeUnit.MINUTES).build(new CacheLoader<String, PartedCrypto>() {
+
+
+    private LoadingCache<CryptoInfo, PartedCrypto> cryptoCache = CacheBuilder.newBuilder()
+    .expireAfterAccess(5, TimeUnit.MINUTES).build(new CacheLoader<CryptoInfo, PartedCrypto>() {
         @Override
-        PartedCrypto load(String key) throws Exception {
+        PartedCrypto load(CryptoInfo info) throws Exception {
             def c = new PartedECBCrypto();
-            c.setPassword(key)
+            c.initialize(info.password, info.iv, info.salt)
             return c
         }
     })
@@ -41,9 +44,9 @@ class PartedCompressedCryptoFile extends PartedFile{
     File directory
     PartedCrypto crypto;
 
-    PartedCompressedCryptoFile(File directory, String password) {
+    PartedCompressedCryptoFile(File directory, String password, byte[] iv, byte[] salt) {
         this.directory = directory
-        crypto = cryptoCache.get(password)
+        crypto = cryptoCache.get(new CryptoInfo(password, iv, salt))
     }
 
     @Override
@@ -76,6 +79,11 @@ class PartedCompressedCryptoFile extends PartedFile{
         return file.lastModified()
     }
 
+    @Override
+    Long getSizeOnMedia(File file) {
+        return file.size()
+    }
+
     private int getIndex(File file) {
 
     }
@@ -97,6 +105,39 @@ class PartedCompressedCryptoFile extends PartedFile{
             final file = files[i]
             def data = unpack(i, file.bytes)
             file.setLastModified(data.size())
+        }
+    }
+
+    public static class CryptoInfo {
+        String password
+        byte[] iv
+        byte[] salt
+
+        CryptoInfo(String password, byte[] iv, byte[] salt) {
+            this.password = password
+            this.iv = iv
+            this.salt = salt
+        }
+
+        boolean equals(o) {
+            if (this.is(o)) return true
+            if (getClass() != o.class) return false
+
+            CryptoInfo that = (CryptoInfo) o
+
+            if (!Arrays.equals(iv, that.iv)) return false
+            if (password != that.password) return false
+            if (!Arrays.equals(salt, that.salt)) return false
+
+            return true
+        }
+
+        int hashCode() {
+            int result
+            result = (password != null ? password.hashCode() : 0)
+            result = 31 * result + (iv != null ? Arrays.hashCode(iv) : 0)
+            result = 31 * result + (salt != null ? Arrays.hashCode(salt) : 0)
+            return result
         }
     }
 

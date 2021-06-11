@@ -19,8 +19,6 @@
 #include <jvmti.h>
 #include <hwloc.h>
 
-#include "lsscsi.c"
-
 #include "../build/include/jtape_BasicTapeDevice.h"
 
 #define TRUE 1
@@ -74,7 +72,6 @@ JNIEXPORT void JNICALL Java_jtape_BasicTapeDevice_tapeOpen
     p = (*env)->GetStringUTFChars(env, path, 0);
     fd = open(p, O_RDWR | O_NONBLOCK);
     (*env)->ReleaseStringUTFChars(env, path, p);
-    printf("You entered: %d", fd);
     if (fd == -1) {
         throw(env, errno);
     }
@@ -196,6 +193,29 @@ JNIEXPORT jlong JNICALL Java_jtape_BasicTapeDevice_tapeGetStatus
         bs = -1;
     } else {
         bs = mtget.mt_gstat;
+    }
+
+    return bs;
+}
+
+/*
+ * Class:     BasicTapeDevice
+ * Method:    tapeGetFileNumber
+ * Signature: ()L
+ */
+JNIEXPORT jlong JNICALL Java_jtape_BasicTapeDevice_tapeGetFileNumber
+        (JNIEnv *env, jobject this)
+{
+    int fd;
+    struct mtget mtget;
+    jint bs;
+
+    fd = getFD(env, this);
+    if (ioctl(fd, MTIOCGET, &mtget) == -1) {
+        throw(env, errno);
+        bs = -1;
+    } else {
+        bs = mtget.mt_fileno;
     }
 
     return bs;

@@ -42,6 +42,8 @@ abstract class PartedFile {
 
     public abstract Long getSize(File file)
 
+    public abstract Long getSizeOnMedia(File file)
+
     public abstract byte[] pack(Integer index, byte[] data)
 
     public abstract byte[] unpack(Integer file, byte[] data)
@@ -69,7 +71,13 @@ abstract class PartedFile {
     public Long getSize() {
         loadSizes()
         def size = sizes.collect { getSize(it.key) }.sum()
-        return (size == null) ? -1 : size as long
+        return (size == null) ? null : size as long
+    }
+
+    public Long getSizeOnMedia() {
+        loadSizes()
+        def size = sizes.collect { getSizeOnMedia(it.key) }.sum()
+        return (size == null) ? null : size as long
     }
 
     @CompileStatic

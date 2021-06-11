@@ -15,14 +15,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.io.crypto;
+package de.jonasborn.patema.util
 
-public interface PartedCrypto {
+import org.springframework.security.crypto.argon2.Argon2PasswordEncoder
+import sun.security.ssl.SecureKey
 
-    public void initialize(String password, byte[] iv, byte[] salt) throws Exception;
+import javax.crypto.SecretKey
+import javax.crypto.SecretKeyFactory
+import javax.crypto.spec.PBEKeySpec
 
-    public byte[] encrypt(int index, byte[] data) throws Exception;
+class SecurityUtils {
 
-    public byte[] decrypt(int index, byte[] data) throws Exception;
+    public static byte[] argon2(String password) {
+        def a2 = new Argon2PasswordEncoder();
+        return a2.encode(password).getBytes("UTF-8")
+    }
+
+    public static boolean argon2check(byte[] encoded, String password) {
+        def a2 = new Argon2PasswordEncoder()
+        return a2.matches(password, new String(encoded, "UTF-8"))
+    }
 
 }

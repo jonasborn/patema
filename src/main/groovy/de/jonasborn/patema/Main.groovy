@@ -19,10 +19,28 @@ package de.jonasborn.patema
 
 import com.guichaguri.minimalftp.FTPServer
 import de.jonasborn.patema.ftp.FTPAuth
+import org.apache.logging.log4j.Level
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
+import org.apache.logging.log4j.core.LoggerContext
+import org.apache.logging.log4j.core.config.Configuration
+import org.apache.logging.log4j.core.config.Configurator
+import org.apache.logging.log4j.core.config.LoggerConfig
+
 
 class Main {
 
+    static Logger logger = LogManager.getLogger(Main.class)
+
     public static void main(String[] args) {
+
+        LoggerContext context = (LoggerContext) LogManager.getContext(false);
+        Configuration config = context.getConfiguration();
+        LoggerConfig rootConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+        rootConfig.setLevel(Level.DEBUG);
+        context.updateLoggers();
+
+        logger.debug("Debugging active")
 
         File root = new File("root");
         def auth = new FTPAuth(root);

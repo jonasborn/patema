@@ -21,9 +21,12 @@ import com.guichaguri.minimalftp.FTPConnection
 import com.guichaguri.minimalftp.api.CmdResponse
 import com.guichaguri.minimalftp.api.IFileSystem
 import com.guichaguri.minimalftp.api.IUserAuthenticator
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 
 class FTPAuth implements IUserAuthenticator {
 
+    Logger logger = LogManager.getLogger(FTPAuth.class)
     File directory
 
     FTPAuth(File directory) {
@@ -42,6 +45,7 @@ class FTPAuth implements IUserAuthenticator {
 
     @Override
     IFileSystem authenticate(FTPConnection con, InetAddress host, String username, String password) throws IUserAuthenticator.AuthException {
+        logger.info("Authenticating user {} from {}", username, host)
         FTPConfig config = new FTPConfig(username, password)
         con.registerCmd("ENCRYPT", "encryption <on/off>", {
             if (it.args == "on") config.encrypt = true
@@ -64,6 +68,6 @@ class FTPAuth implements IUserAuthenticator {
             }
         })
 
-        return new FTPFileSystem(config, directory)
+        return new FTPFileSystem(config, con,  directory)
     }
 }

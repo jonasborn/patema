@@ -15,14 +15,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.io.crypto;
+package de.jonasborn.patema.util;
 
-public interface PartedCrypto {
+public class ByteUtils {
 
-    public void initialize(String password, byte[] iv, byte[] salt) throws Exception;
+    public static byte[] xor(byte[] iv, byte[] data) {
+        int position = 0;
+        byte[] output = new byte[data.length];
+        for (int i = 0; i < data.length; i++) {
+            if (position >= iv.length) position = 0;
+            output[i] = (byte) (iv[position] ^ data[i]);
+            position++;
+        }
+        return output;
+    }
 
-    public byte[] encrypt(int index, byte[] data) throws Exception;
+    public static byte[] join(byte[] a, byte[] b) {
+        byte[] output = new byte[a.length + b.length];
+        System.arraycopy(a, 0, output, 0, a.length);
+        System.arraycopy(b, 0, output, a.length, b.length);
+        return output;
+    }
 
-    public byte[] decrypt(int index, byte[] data) throws Exception;
+
 
 }

@@ -36,31 +36,31 @@ import javax.crypto.spec.SecretKeySpec;
 class PartedCTRCrypto implements PartedCrypto {
 
     SecretKeySpec key;
-    IvParameterSpec iv;
+    byte[] salt;
+    byte[] iv;
 
     PartedCTRCryptoCache encryptionCache;
     PartedCTRCryptoCache decryptionCache;
 
 
-    PartedCTRCrypto(String password) throws Exception {
+    PartedCTRCrypto() throws Exception {
 
     }
 
     @Override
-    public void setPassword(String password) throws Exception{
-        byte[] salt = Hashing.murmur3_128().hashString(password, Charsets.UTF_8).asBytes();
-        //System.out.println(BaseEncoding.base32Hex().encode(salt));
+    public void initialize(String password, byte[] iv,  byte[] salt) throws Exception{
+        this.iv = iv;
+        this.salt = salt;
+        //byte[] salt = Hashing.murmur3_128().hashString(password, Charsets.UTF_8).asBytes();
         PBEKeySpec keySpec = new PBEKeySpec(password.toCharArray(), salt, 1000, 128);
         SecretKey k = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1").generateSecret(keySpec);
         key = new SecretKeySpec(k.getEncoded(), "AES");
-        //System.out.println(BaseEncoding.base32Hex().encode(key.getEncoded()));
-        PBEKeySpec ivSpec = new PBEKeySpec(password.toCharArray(), salt, 1000, 16);
-        SecretKey ivKey = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1").generateSecret(ivSpec);
-        iv = new IvParameterSpec(ivKey.getEncoded());
-        //System.out.println(BaseEncoding.base32Hex().encode(iv.getIV()));
-
-        this.encryptionCache = new PartedCTRCryptoCache(Cipher.ENCRYPT_MODE, key, iv);
-        this.decryptionCache = new PartedCTRCryptoCache(Cipher.DECRYPT_MODE, key, iv);
+        //PBEKeySpec ivSpec = new PBEKeySpec(password.toCharArray(), salt, 1000, 16);
+        //SecretKey ivKey = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1").generateSecret(ivSpec);
+        //iv = new IvParameterSpec(ivKey.getEncoded());
+        IvParameterSpec ivSpec = new IvParameterSpec(iv);
+        this.encryptionCache = new PartedCTRCryptoCache(Cipher.ENCRYPT_MODE, key, ivSpec);
+        this.decryptionCache = new PartedCTRCryptoCache(Cipher.DECRYPT_MODE, key, ivSpec);
     }
 
     public byte[] encrypt(int index, byte[] data) throws Exception {

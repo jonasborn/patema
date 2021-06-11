@@ -138,9 +138,11 @@ public class BasicTapeDevice {
         // Not implemented
 
         return ts;
-
     }
 
+    public long getFileNumber() throws IOException {
+        return tapeGetFileNumber();
+    }
 
     public void clearEOF() throws IOException {
         ensureOpen();
@@ -292,6 +294,8 @@ public class BasicTapeDevice {
     private native void tapeMTUNLOAD() throws IOException;
 
     private native int tapeGetStatus() throws IOException;
+
+    private native int tapeGetFileNumber() throws IOException;
 
     /* load the JNI library specific for this platform */
     static {

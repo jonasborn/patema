@@ -54,7 +54,6 @@ class FTPFileFactory {
 
     public FTPElement find(String path) throws IOException {
         def parts = path.split("/")
-        println parts
         if (path == "/" || parts.length == 1) {
             return root()
         }

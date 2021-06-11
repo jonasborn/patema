@@ -15,14 +15,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.io.crypto;
+package de.jonasborn.patema.header
 
-public interface PartedCrypto {
+import de.jonasborn.patema.util.SecurityUtils
 
-    public void initialize(String password, byte[] iv, byte[] salt) throws Exception;
+class Token {
 
-    public byte[] encrypt(int index, byte[] data) throws Exception;
+    protected String password
+    byte[] salt
+    byte[] iv
+    byte[] pool
 
-    public byte[] decrypt(int index, byte[] data) throws Exception;
+    Token(String password, byte[] salt, byte[] iv, byte[] pool) {
+        this.password = password
+        this.salt = salt
+        this.iv = iv
+        this.pool = pool
+    }
+
+
+    public boolean checkPassword() {
+        return SecurityUtils.argon2check(iv, password)
+    }
+
 
 }

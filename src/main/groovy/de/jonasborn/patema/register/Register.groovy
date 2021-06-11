@@ -17,9 +17,16 @@
 
 package de.jonasborn.patema.register
 
-interface Register {
+interface Register<T extends RegisterEntry> {
 
+    public byte[] getSalt();
 
     public int getVersion()
+
+    public List<RegisterEntry> getEntries()
+
+    public void addEntry(RegisterEntry entry)
+
+    public void removeEntry(RegisterEntry entry)
 
 }

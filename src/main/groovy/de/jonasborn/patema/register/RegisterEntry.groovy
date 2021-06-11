@@ -15,14 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.io.crypto;
+package de.jonasborn.patema.register
 
-public interface PartedCrypto {
+interface RegisterEntry {
 
-    public void initialize(String password, byte[] iv, byte[] salt) throws Exception;
+    public String getPassword()
 
-    public byte[] encrypt(int index, byte[] data) throws Exception;
+    public String getName()
 
-    public byte[] decrypt(int index, byte[] data) throws Exception;
+    public int getPosition()
+
+    public long getLength()
+
+    public long getLengthOnMedia();
+
+    public byte[] getHash();
 
 }
