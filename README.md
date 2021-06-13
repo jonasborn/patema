@@ -37,6 +37,9 @@ The project includes a CMake project in the native folder. This project is used 
 the libpatema-native (JNI), used to directly control the tape device.
 The main project is build using Java, including sources from JTape and MinimalFTP.
 
+Some parts of this project are written using Java, other ones using Groovy. This is made because
+plain Java is more speed effective than Groovy. Groovy in the other hand is more useful.
+
 ### Files
 As ftp needs random access to files - mostly in order to resume uploads and downloads, the project
 provides a custom solution for that.
