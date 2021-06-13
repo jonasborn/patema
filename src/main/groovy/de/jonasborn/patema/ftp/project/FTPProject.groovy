@@ -129,7 +129,7 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
 
     public List<FTPProjectFile> list() {
         if (!delegate.exists() || !accessible) return []
-        delegate.listFiles().collect {
+        delegate.listFiles().findAll {it.isDirectory()}.collect {
             return new FTPProjectFile(this, it.name)
         }
     }
@@ -142,7 +142,7 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
     public void registerFile(FTPProjectFile file) {
         prepare()
         V1RegisterEntry entry = new V1RegisterEntry(
-                file.title, register.getEntries().size(), file.parted.hash(), file.getSize(), file.parted.getSizeOnMedia(), root.config.password
+                file.title, register.getEntries().size(), file.partedCrypto.hash(), file.getSize(), file.partedCrypto.getSizeOnMedia(), root.config.password
         )
         register.addEntry(entry)
         writeRegister()
@@ -151,7 +151,7 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
     public void unregisterFile(FTPProjectFile file) {
         prepare()
         V1RegisterEntry entry = new V1RegisterEntry(
-                file.title, register.getEntries().size(), file.parted.hash(), file.getSize(), file.parted.getSizeOnMedia(), root.config.password
+                file.title, register.getEntries().size(), file.partedCrypto.hash(), file.getSize(), file.partedCrypto.getSizeOnMedia(), root.config.password
         )
         register.removeEntry(entry)
         writeRegister()

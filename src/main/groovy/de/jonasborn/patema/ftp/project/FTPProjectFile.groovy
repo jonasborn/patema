@@ -22,7 +22,7 @@ import de.jonasborn.patema.ftp.FTPElement
 import de.jonasborn.patema.io.PartedFileInputStream
 import de.jonasborn.patema.io.PartedFileOutputStream
 import de.jonasborn.patema.io.PartedCompressedCryptoFile
-
+import de.jonasborn.patema.io.PartedRawFile
 import groovy.transform.CompileStatic
 
 import java.security.MessageDigest
@@ -32,9 +32,11 @@ class FTPProjectFile extends FTPElement {
     File delegate;
     FTPProject project;
     String title;
-    PartedCompressedCryptoFile parted;
-    PartedFileOutputStream cout
-    PartedFileInputStream cin;
+    PartedCompressedCryptoFile partedCrypto
+    PartedFileOutputStream coutCrypto
+    PartedFileInputStream cinCrypto;
+    PartedRawFile partedRaw
+    PartedFileInputStream cinRaw
 
     /**
      * Will initialize the underlying chunked file and create
@@ -50,12 +52,13 @@ class FTPProjectFile extends FTPElement {
         this.project = project
         this.delegate = new File(project.delegate, title)
         if (!delegate.exists()) delegate.mkdir()
-        this.parted = new PartedCompressedCryptoFile(
+        this.partedCrypto = new PartedCompressedCryptoFile(
                 delegate,
                 project.register.getPassword(title),
                 project.register.getIv(title),
                 project.register.getSalt(title)
         )
+        this.partedRaw = new PartedRawFile(delegate)
     }
 
     @Override
@@ -80,13 +83,13 @@ class FTPProjectFile extends FTPElement {
     }
 
     public Long getSize() {
-        def size = parted.getSize()
+        def size = partedCrypto.getSize()
         if (size == null) return -1
         return size
     }
 
     public long getSizeOnMedia() {
-        return parted.getSizeOnMedia()
+        return partedCrypto.getSizeOnMedia()
     }
 
     public void finished() {
@@ -104,17 +107,23 @@ class FTPProjectFile extends FTPElement {
         return digest.digest()
     }
 
+    public PartedFileInputStream readRaw(long start) {
+        if (cinRaw == null) cinRaw = new PartedFileInputStream(partedRaw)
+        partedRaw.seek(start)
+        return cinRaw
+    }
+
     @CompileStatic
     public PartedFileInputStream read(long start) {
-        if (cin == null) cin = new PartedFileInputStream(parted)
-        cin.seek(start)
-        return cin
+        if (cinCrypto == null) cinCrypto = new PartedFileInputStream(partedCrypto)
+        cinCrypto.seek(start)
+        return cinCrypto
     }
 
     @CompileStatic
     public PartedFileOutputStream write(long start) {
-        if (cout == null) cout = new PartedFileOutputStream(parted)
-        cout.seek(start)
-        return cout
+        if (coutCrypto == null) coutCrypto = new PartedFileOutputStream(partedCrypto)
+        coutCrypto.seek(start)
+        return coutCrypto
     }
 }

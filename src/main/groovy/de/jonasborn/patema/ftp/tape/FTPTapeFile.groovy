@@ -24,6 +24,7 @@ class FTPTapeFile extends FTPElement {
 
     FTPTape tape;
     String title
+    Long size
 
     FTPTapeFile(FTPTape tape, String title) {
         super(Type.TAPE_FILE)
@@ -51,9 +52,6 @@ class FTPTapeFile extends FTPElement {
 
     }
 
-    long getSize() {
-        return 0
-    }
 
     public void write(FTPProject project) {
         project.lock()

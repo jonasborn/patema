@@ -16,7 +16,6 @@ import org.apache.logging.log4j.Logger
 class Tape {
 
 
-
     /*
     Usage:
     i = FileInputStream(...)
@@ -91,9 +90,10 @@ class Tape {
         StreamCopier.copy(bin, device.outputStream, bufferSize);
     }
 
-    private void readBytes() {
+    private byte[] readBytes() {
         ByteArrayOutputStream bout = new ByteArrayOutputStream()
         StreamCopier.copy(device.inputStream, bout, bufferSize)
+        return bout.toByteArray()
     }
 
     public void writeRegister(Register register, String password) throws IOException {
@@ -104,9 +104,9 @@ class Tape {
     }
 
     public Register readRegister(String password) throws IOException {
-        ByteArrayOutputStream bout = new ByteArrayOutputStream()
-        StreamCopier.copy(device.inputStream, bout, bufferSize)
-        return Registers.unpack(bout.toByteArray(), password)
+        logger.info("Reading register from {}", path)
+        device.rewind()
+        return Registers.unpack(readBytes(), password)
     }
 
     public void read(Register register, int position, OutputStream outputStream) {
@@ -114,12 +114,13 @@ class Tape {
     }
 
     public void write(Register register, int position, InputStream inputStream) {
-
+        assert inputStream != null
+        StreamCopier.copy(inputStream, device.outputStream, bufferSize);
+        device.writeFileMarker()
     }
 
 
     static void main(String[] args) {
-
 
 
     }
