@@ -17,6 +17,12 @@
 
 package de.jonasborn.patema.util;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class ByteUtils {
 
     public static byte[] xor(byte[] iv, byte[] data) {
@@ -38,5 +44,18 @@ public class ByteUtils {
     }
 
 
+    public static long copy(InputStream from, OutputStream to, int bufferSize) throws IOException {
+        checkNotNull(from);
+        checkNotNull(to);
+        byte[] buffer = new byte[bufferSize];
+        long total = 0;
+        while (true) {
+            int read = from.read(buffer);
+            if (read == -1) break;
+            to.write(buffer, 0, read);
+            total += read;
+        }
+        return total;
+    }
 
 }

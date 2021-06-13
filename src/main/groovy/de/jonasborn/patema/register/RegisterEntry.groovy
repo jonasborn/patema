@@ -19,8 +19,6 @@ package de.jonasborn.patema.register
 
 interface RegisterEntry {
 
-    public String getPassword()
-
     public String getName()
 
     public int getPosition()

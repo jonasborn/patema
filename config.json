@@ -1,0 +1,14 @@
+{
+  "users": [
+    {
+      "username": "jonas",
+      "password": "JGFyZ29uMmlkJHY9MTkkbT00MDk2LHQ9MyxwPTEkMHF5SnlzTU9pNWxwYWNXY0tmdzAvZyRYWENQd1IzN1EvYzJoTDNOeDJBQUxoUldHbDFqb1hDd2RHcHNRYmhVdWQ0"
+    }
+  ],
+  "binaryConfig": {
+    "_prefix": "sudo",
+    "tapeinfo": "script/tapeinfo.sh",
+    "sg_logs": "script/sg_logs.sh",
+    "lsscsi": "script/lsscsi.sh"
+  }
+}

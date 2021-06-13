@@ -163,8 +163,10 @@ class FTPFileSystem implements IFileSystem<FTPElement> {
                 //RUN ASYNC
                 logger.info("{} is triggering to write {} to {}", username, from, to)
                 project.locked = true
-                project.write(to.getParent().asTape())
-                project.locked = false
+                Thread.start {
+                    to.getParent().asTape().write(project)
+                    project.locked = false
+                }
             } else {
                 logger.warn("{} is using project {}, which is currently locked", username, from)
                 throw new IOException("Project is currently in use and locked, please wait for the last operation to complete")

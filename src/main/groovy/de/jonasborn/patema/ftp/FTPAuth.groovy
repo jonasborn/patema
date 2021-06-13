@@ -21,6 +21,7 @@ import com.guichaguri.minimalftp.FTPConnection
 import com.guichaguri.minimalftp.api.CmdResponse
 import com.guichaguri.minimalftp.api.IFileSystem
 import com.guichaguri.minimalftp.api.IUserAuthenticator
+import de.jonasborn.patema.config.Config
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
@@ -46,6 +47,9 @@ class FTPAuth implements IUserAuthenticator {
     @Override
     IFileSystem authenticate(FTPConnection con, InetAddress host, String username, String password) throws IUserAuthenticator.AuthException {
         logger.info("Authenticating user {} from {}", username, host)
+
+        if (!Config.current.getUsers().auth(username, password)) throw new IUserAuthenticator.AuthException()
+
         FTPConfig config = new FTPConfig(username, password)
         con.registerCmd("ENCRYPT", "encryption <on/off>", {
             if (it.args == "on") config.encrypt = true

@@ -71,7 +71,7 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
             }
 
             if (register == null) {
-                register = new V1Register(getTitle())
+                register = new V1Register(getTitle(), root.config.password)
                 writeRegister()
                 logger.debug("Created new register for {}", this)
             }
@@ -115,21 +115,7 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
     }
 
     public void write(FTPTape tape) throws Exception {
-        try {
-            def device = tape.getDevice()
-            if (device == null) throw new IOException("Unable to find device " + tape.getDevicePath())
-            logger.info("Writing {} to {}", this, tape)
-            logger.debug("Initializing device {}", tape)
-            device.initialize()
-            logger.debug("Writing register from {} to {}", this, tape)
-            device.writeRegister(register, root.config.password)
-            logger.debug("Successfully wrote register {} to {}", this, tape)
 
-            //Load all files from directory, each as a PartedRawFile and then dump them to the tape with markers
-
-        } catch (Exception e) {
-            e.printStackTrace()
-        }
     }
 
     @Override

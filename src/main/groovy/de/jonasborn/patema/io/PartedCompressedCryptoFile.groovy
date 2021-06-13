@@ -20,21 +20,19 @@ package de.jonasborn.patema.io
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import com.google.common.cache.LoadingCache
-import de.jonasborn.patema.header.Token
 import de.jonasborn.patema.io.crypto.PartedCrypto
 import de.jonasborn.patema.io.crypto.PartedECBCrypto
 import de.jonasborn.patema.util.XZUtils
 
 import java.util.concurrent.TimeUnit
 
-class PartedCompressedCryptoFile extends PartedFile{
+class PartedCompressedCryptoFile extends PartedFile {
 
-
-
-    private LoadingCache<CryptoInfo, PartedCrypto> cryptoCache = CacheBuilder.newBuilder()
-    .expireAfterAccess(5, TimeUnit.MINUTES).build(new CacheLoader<CryptoInfo, PartedCrypto>() {
+    private static LoadingCache<CryptoInfo, PartedCrypto> cryptoCache = CacheBuilder.newBuilder()
+            .expireAfterAccess(5, TimeUnit.MINUTES).build(new CacheLoader<CryptoInfo, PartedCrypto>() {
         @Override
         PartedCrypto load(CryptoInfo info) throws Exception {
+            println "CREATED"
             def c = new PartedECBCrypto();
             c.initialize(info.password, info.iv, info.salt)
             return c
@@ -58,7 +56,7 @@ class PartedCompressedCryptoFile extends PartedFile{
     List<File> listFiles() {
         List<File> list = this.directory.listFiles()
         if (list == null) return []
-        list = list.findAll {it.name.endsWith(".ptma")}
+        list = list.findAll { it.name.endsWith(".ptma") }
         list.sort(new Comparator<File>()
         {
             @Override
@@ -73,7 +71,6 @@ class PartedCompressedCryptoFile extends PartedFile{
     }
 
 
-
     @Override
     Long getSize(File file) {
         return file.lastModified()
@@ -82,10 +79,6 @@ class PartedCompressedCryptoFile extends PartedFile{
     @Override
     Long getSizeOnMedia(File file) {
         return file.size()
-    }
-
-    private int getIndex(File file) {
-
     }
 
     @Override

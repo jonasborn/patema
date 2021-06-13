@@ -20,20 +20,33 @@ package de.jonasborn.patema.ftp.tape
 import de.jonasborn.patema.ftp.FTPDirectory
 import de.jonasborn.patema.ftp.FTPElement
 import de.jonasborn.patema.ftp.FTPRoot
+import de.jonasborn.patema.ftp.project.FTPProject
 import de.jonasborn.patema.tape.Tape
 import de.jonasborn.patema.tape.Tapes
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
+
+import java.text.DecimalFormat
 
 import static de.jonasborn.patema.ftp.FTPElement.Type.TAPE
 
 public class FTPTape extends FTPDirectory<FTPTapeFile> {
+
+    Logger logger = LogManager.getLogger(FTPTape.class)
+
+    static Map<String, String> overviews = [:]
+
     FTPRoot root
     String devicePath
-    Tape device
+
 
     FTPTape(FTPRoot root, String devicePath) {
         super(TAPE)
         this.root = root
+        devicePath = devicePath.replaceAll("\\[.*\\]", "")
+        if (devicePath.startsWith("tape-")) devicePath = devicePath.replace("tape-", "/dev/")
         this.devicePath = devicePath
+
     }
 
     @Override
@@ -53,7 +66,10 @@ public class FTPTape extends FTPDirectory<FTPTapeFile> {
 
     @Override
     String getTitle() {
-        return "tape-" + devicePath.split("/").last()
+        def id = devicePath.split("/").last()
+        def overview = overviews.get(devicePath)
+        if (overview != null) return "tape-" + id + "[" + overview + "]"
+        return "tape-" + id
     }
 
     @Override
@@ -73,9 +89,36 @@ public class FTPTape extends FTPDirectory<FTPTapeFile> {
         ]
     }
 
-    public void prepare() throws IOException {
-        device = Tapes.get(devicePath)
-        device.initialize()
+    private void setOverview(double percent, String message) {
+        def data = new DecimalFormat("#.##").format(percent) + "% " + message
+        overviews.put(devicePath, data)
     }
+
+    private void clearOverview() {
+        overviews.remove(devicePath) //TODO CHECK EXCEPTION
+    }
+
+    public void write(FTPProject project) {
+        try {
+            def device = getDevice()
+            if (device == null) throw new IOException("Unable to find device " + getDevicePath())
+            logger.info("Writing {} to {}", this, devicePath)
+            logger.debug("Initializing device {}", devicePath)
+            setOverview(10, "Initializing")
+            device.initialize()
+            logger.debug("Writing register from {} to {}", this, tape)
+            setOverview(30, "Write register")
+            device.writeRegister(project.register, root.config.password)
+            setOverview(90, "Wrote register")
+            logger.debug("Successfully wrote register {} to {}", this, tape)
+            setOverview(100, "Finished")
+            //Load all files from directory, each as a PartedRawFile and then dump them to the tape with markers
+
+        } catch (Exception e) {
+            setOverview(-1, "Unable to write")
+            e.printStackTrace()
+        }
+    }
+
 }
 

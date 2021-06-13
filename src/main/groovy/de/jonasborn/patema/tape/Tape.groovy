@@ -1,6 +1,7 @@
 package de.jonasborn.patema.tape
 
 import com.google.common.hash.Hashing
+import com.google.common.io.ByteStreams
 import com.rockaport.alice.Alice
 import com.rockaport.alice.AliceContext
 import com.rockaport.alice.AliceContextBuilder
@@ -8,10 +9,9 @@ import de.jonasborn.patema.register.Register
 import de.jonasborn.patema.register.Registers
 import jtape.BasicTapeDevice
 import jtape.StreamCopier
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 
-import javax.crypto.spec.PBEKeySpec
-import java.security.SecureRandom
-import java.util.logging.Logger
 
 class Tape {
 
@@ -55,7 +55,9 @@ class Tape {
 
      */
 
-    Logger logger;
+    static Logger logger = LogManager.getLogger(Tape.class)
+
+    static final int bufferSize = 1024 * 8
 
     String id
     String path
@@ -66,41 +68,44 @@ class Tape {
     Tape(String id, String path) {
         this.id = id
         this.path = path
-        logger = Logger.getLogger("Tape-$id");
     }
 
     public void initialize(boolean rewind = true) {
         try {
             if (device == null) {
                 this.device = new BasicTapeDevice(path)
-                if (rewind) device.rewind()
+                device.setBlockSize(0)
+                if (rewind) {
+                    logger.debug("Rewinding device {}", path)
+                    device.rewind()
+                }
             }
         } catch (Exception e) {
-            logger.warning("Unable to initialize device $id: ${e.getMessage()}")
+            logger.warn("Unable to initialize device $path: ${e.getMessage()}")
             throw e
         }
     }
 
     private void writeBytes(byte[] data) {
         ByteArrayInputStream bin = new ByteArrayInputStream(data)
-        StreamCopier.copy(bin, device.outputStream, device.getBlockSize() * 1024);
+        StreamCopier.copy(bin, device.outputStream, bufferSize);
     }
 
     private void readBytes() {
         ByteArrayOutputStream bout = new ByteArrayOutputStream()
-        StreamCopier.copy(device.inputStream, bout, device.getBlockSize() * 1024)
+        StreamCopier.copy(device.inputStream, bout, bufferSize)
     }
 
     public void writeRegister(Register register, String password) throws IOException {
+        logger.info("Writing register to {}", path)
         device.rewind()
-        device.skipFileToEnd()
         writeBytes(Registers.pack(register, password))
         device.writeFileMarker()
     }
 
     public Register readRegister(String password) throws IOException {
         ByteArrayOutputStream bout = new ByteArrayOutputStream()
-        StreamCopier.copy(device.inputStream, bout, device.getBlockSize() * 1024)
+        StreamCopier.copy(device.inputStream, bout, bufferSize)
         return Registers.unpack(bout.toByteArray(), password)
     }
 
@@ -115,9 +120,7 @@ class Tape {
 
     static void main(String[] args) {
 
-        def tape = new Tape("nst0", "/dev/nst0")
-        tape.initialize()
-        println tape.device.getFileNumber()
+
 
     }
 

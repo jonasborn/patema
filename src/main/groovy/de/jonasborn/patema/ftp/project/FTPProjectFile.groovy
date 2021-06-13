@@ -52,9 +52,9 @@ class FTPProjectFile extends FTPElement {
         if (!delegate.exists()) delegate.mkdir()
         this.parted = new PartedCompressedCryptoFile(
                 delegate,
-                project.getRoot().getConfig().getPassword(),
-                project.register.iv,
-                project.register.salt
+                project.register.getPassword(title),
+                project.register.getIv(title),
+                project.register.getSalt(title)
         )
     }
 

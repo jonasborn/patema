@@ -19,13 +19,13 @@ package de.jonasborn.patema.tape
 
 import de.jonasborn.patema.info.Sys
 import jtape.BasicTapeDevice
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 
-import java.util.logging.LogManager
-import java.util.logging.Logger
 
 class Tapes {
 
-    private static Logger logger = Logger.getLogger("Tapes")
+    private static Logger logger = LogManager.getLogger(Tapes.class)
 
     private static final directory = new File("/dev/tape/by-id/")
 
@@ -34,7 +34,7 @@ class Tapes {
     }
 
     public static Tape get(String path) {
-        return list().find {it.path = path}
+        return list().find { it.path = path }
     }
 
     private static String extractId(File file) {
@@ -47,13 +47,13 @@ class Tapes {
     }
 
     public static List<Tape> list() {
-        directory.listFiles().findAll {it.path.contains("nst")}.collect {
+        directory.listFiles().findAll { it.path.contains("nst") }.collect {
             if (it.exists()) {
                 try {
-                    logger.finest("Preparing tape ${it.getPath()}")
+                    logger.debug("Preparing tape ${it.getCanonicalPath()}")
                     return new Tape(extractId(it), it.getCanonicalPath())
                 } catch (Exception e) {
-                    logger.warning("Unable to prepare tape ${it.getPath()}: ${e.getMessage()}")
+                    logger.warn("Unable to prepare tape ${it.getPath()}: ${e.getMessage()}")
                 }
             }
             return null

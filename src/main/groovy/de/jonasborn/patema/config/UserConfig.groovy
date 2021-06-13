@@ -15,22 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.register
+package de.jonasborn.patema.config
 
-interface Register<T extends RegisterEntry> {
+class UserConfig {
 
-    public int getVersion()
-
-    public List<RegisterEntry> getEntries()
-
-    public void addEntry(RegisterEntry entry)
-
-    public void removeEntry(RegisterEntry entry)
-
-    byte[] getIv(String title)
-
-    byte[] getSalt(String title)
-
-    String getPassword(String title)
+    String username
+    String password
 
 }

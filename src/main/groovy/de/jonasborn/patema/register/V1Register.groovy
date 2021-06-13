@@ -29,19 +29,23 @@ class V1Register implements Register<V1RegisterEntry> {
     private static SecureRandom random = new SecureRandom()
     
     String id
-    byte[] salt;
-    byte[] iv;
+    private String password;
+    private byte[] salt;
+    private byte[] iv;
     LinkedList<RegisterEntry> entries = []
 
     V1Register() {
     }
 
-    V1Register(String id) {
+    V1Register(String id, String password) {
         this.id = id
+        this.password = password
         salt = new byte[32]
         random.nextBytes(salt)
         iv = new byte[32]
     }
+
+
 
     @Override
     int getVersion() {
@@ -59,4 +63,19 @@ class V1Register implements Register<V1RegisterEntry> {
     }
 
 
+
+    @Override
+    byte[] getIv(String title) {
+        return iv;
+    }
+
+    @Override
+    byte[] getSalt(String title) {
+        return salt;
+    }
+
+    @Override
+    String getPassword(String title) {
+        return password;
+    }
 }

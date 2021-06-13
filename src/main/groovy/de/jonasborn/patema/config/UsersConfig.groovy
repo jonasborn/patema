@@ -15,22 +15,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.register
+package de.jonasborn.patema.config
 
-interface Register<T extends RegisterEntry> {
+import com.google.common.io.BaseEncoding
+import de.jonasborn.patema.util.SecurityUtils
 
-    public int getVersion()
+class UsersConfig extends ArrayList<UserConfig> {
 
-    public List<RegisterEntry> getEntries()
+    public boolean auth(String username, String password) {
+        try {
+            def user = this.find { it.username = username }
+            if (user == null) return false
+            return SecurityUtils.argon2check(BaseEncoding.base64().decode(user.password), password)
+        } catch (Exception e) {
+            e.printStackTrace()
+            return false
+        }
+    }
 
-    public void addEntry(RegisterEntry entry)
-
-    public void removeEntry(RegisterEntry entry)
-
-    byte[] getIv(String title)
-
-    byte[] getSalt(String title)
-
-    String getPassword(String title)
 
 }
