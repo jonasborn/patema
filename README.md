@@ -7,29 +7,24 @@ Patema automated tape encoding management algorithms
 This project is currently under heavy development and not working at all.
 Just give me some time!
 
+At the moment, the program is able to write the encrypted chunks as a whole to the tapes and
+will show the current content of a tape in the ftp tree
+
 ---
 
 ---
 **SECURITY INFORMATION**
 
-Do not use a already used password for a second tape.
-You never should use passwords multiple times - but here
-it may corrupt the whole encryption system. Scroll down to "Crypto" for more infos. 
+I'm not a security expert and therefore can not guarantee anything.
 
 ---
 
 ## Current status
 ### Encryption
-Currently implementing an alternative encryption solution using Apache Commons Crypto.
-The lib will use OpenSsl, therefore using AES-NI on Intel-Chips - could be a bit faster.
-Currently 250 KB/s is a bit slow
-Update:
-Ha, looks like it worked. There are now two supported crypto systems supported:
-PartedCTRCrypto, using a cipher pool to speed up or PartedRCBCrypto using a single
-Cipher with a custom iv xor (my favorite).
-Both of them are running at around 10 MB/s.
-Just had to learn a "few" infos about AES and all it's specials ^^
-
+Currently, the project is using **rockaport/alice** for encrypting the registers.
+The register contains the iv and salt used for all files and provides the encryption/decryption passwords.
+The file encryption is a customized AES ECB solution, using an IV based on the chunk position and the initial iv from
+the register. The key for each chunk is generated from a password and the salt from the register. 
 
 ## About
 Patema is a set of tools and algorithms to access LTO-tapes using Java.
@@ -41,6 +36,35 @@ access using a block based storage system (called see SplinteredFile).
 The project includes a CMake project in the native folder. This project is used to create
 the libpatema-native (JNI), used to directly control the tape device.
 The main project is build using Java, including sources from JTape and MinimalFTP.
+
+### Files
+As ftp needs random access to files - mostly in order to resume uploads and downloads, the project
+provides a custom solution for that.
+Files are split in chunks and helt in the memory while working, therefore all encryption, decryption and the
+compression/decompression stuff works on the fly.
+Both, the write and read functions drove me crazy!
+
+
+#### Write
+
+```
+ 1111111111111333333333333300000000000000000000000 -------------------- Current file content
+ |___________| -------------------------------------------------------- Area to skip
+              |___________| ------------------------------------------- Will be overwritten
+ |________________________| ------------------------------------------- Data from file
+                           |_____________________| -------------------- Empty
+ |_______________________________________________| -------------------- Max file size
+              4444444444444444444444444444444444442222222222222222222
+              |__________________________________| -------------------- Data to write for current file
+                                                 |__________________| - Data for next file
+              |_____________________________________________________| - Data total
+```
+
+#### Read
+As the read function not only needs to wirk with fixed chunk sizes (for the encrypted ones) but also with dynamic sizes
+(for reading encrypted content) the read function is a bit more complicated but very well commented. Have a look
+at **de.jonasborn.patema.io.PartedFile**
+
 
 ## Installation
 
