@@ -20,12 +20,9 @@ package de.jonasborn.patema.io
 import com.google.common.io.ByteStreams
 import de.jonasborn.patema.register.Register
 import de.jonasborn.patema.tape.Tape
-import de.jonasborn.patema.util.Buffer
 import groovy.transform.CompileStatic
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
-
-import java.security.MessageDigest
 
 abstract class PartedTapeInputStream {
 
@@ -45,24 +42,24 @@ abstract class PartedTapeInputStream {
         this.register = register
     }
 
-    public boolean isStreamAvailable(int index) {
+    boolean isStreamAvailable(int index) {
         return register.getEntry(index) == null
     }
 
-    public abstract InputStream createInputStream(int index)
+    abstract InputStream createInputStream(int index)
 
     //List of raw lengths
-    public abstract List<Long> listParts()
+    abstract List<Long> listParts()
 
-    public abstract Long getSize(Integer index)
+    abstract Long getSize(Integer index)
 
-    public abstract Long getSizeOnMedia(Integer index)
+    abstract Long getSizeOnMedia(Integer index)
 
-    public abstract byte[] pack(Integer index, byte[] data)
+    abstract byte[] pack(Integer index, byte[] data)
 
-    public abstract byte[] unpack(Integer file, byte[] data)
+    abstract byte[] unpack(Integer file, byte[] data)
 
-    public abstract String getName();
+    abstract String getName();
 
     private byte[] readBytes(int index) {
         ByteArrayOutputStream bout = new ByteArrayOutputStream()
@@ -71,16 +68,16 @@ abstract class PartedTapeInputStream {
     }
 
 
-    public void seek(Long position) {
+    void seek(Long position) {
         logger.debug("Setting position {} for {}", position, this)
         this.position = position
     }
 
-    public void skip(long amount) {
+    void skip(long amount) {
         this.position += amount
     }
 
-    public void loadSizes() {
+    void loadSizes() {
 
         if (indexSizes == null) {
             indexSizes = [:]
@@ -92,25 +89,25 @@ abstract class PartedTapeInputStream {
 
     }
 
-    public Long getSize() {
+    Long getSize() {
         loadSizes()
         def size = indexSizes.collect { getSize(it.key) }
         return (size == null) ? null : size as long
     }
 
-    public Long getSizeOnMedia() {
+    Long getSizeOnMedia() {
         loadSizes()
         def size = indexSizes.collect { getSizeOnMedia(it.key) }
         return (size == null) ? null : size as long
     }
 
     @CompileStatic
-    public PartedStreamChunk getReadChunk(long position) {
+    PartedStreamChunk getReadChunk(long position) {
         loadSizes()
         int index = 0
         //final Iterator<Map.Entry<File, Long>> iter = sizes.iterator()
         final Iterator<Map.Entry<Integer, Long>> iter = indexSizes.iterator()
-        Long sum = 0;
+        Long sum = 0
         if (!iter.hasNext()) return null
         Map.Entry<Integer, Long> element = iter.next()
         sum += element.value
@@ -118,13 +115,13 @@ abstract class PartedTapeInputStream {
             if (!iter.hasNext()) return null
             element = iter.next()
             sum += element.value
-            index++;
+            index++
         }
         return new PartedStreamChunk(index, sum - element.value)
     }
 
     @CompileStatic
-    public PartedStreamChunk getWriteChunk(long position) {
+    PartedStreamChunk getWriteChunk(long position) {
         int index = (int) (position / partSize)
         return new PartedStreamChunk(index, (long) (index * partSize))
     }
@@ -135,7 +132,7 @@ abstract class PartedTapeInputStream {
      * @return A array with max of amount or available bytes
      */
     @CompileStatic
-    public byte[] read(int amount) {
+    byte[] read(int amount) {
         logger.debug("Attempting to read {} bytes from {}", amount, this)
         def current = getReadChunk(position) //Get the positioning
         if (current == null) return null //When there is no file anymore, exit
@@ -151,7 +148,7 @@ abstract class PartedTapeInputStream {
         //Write the data to the output
         bout.write(data, startOfFile, available)
         position += available //Add the read bytes to the position
-        written += available; //Add the written bytes to the position
+        written += available //Add the written bytes to the position
         while (amount > written) { //While there is still sth. to read left
             logger.debug("Chunk {} fully read, moving on", current.getIndex())
             current = getReadChunk(position) //Get the positioning again
@@ -175,13 +172,13 @@ abstract class PartedTapeInputStream {
     }
 
 
-    public void close() {
+    void close() {
 
     }
 
 
     @Override
-    public String toString() {
-        return "PartedFile{" + this.getName() + "}";
+    String toString() {
+        return "PartedFile{" + this.getName() + "}"
     }
 }

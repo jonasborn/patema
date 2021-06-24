@@ -22,7 +22,7 @@ class PartedStreamChunk {
     int index
     Long position
 
-    PartedStreamChunk(int index, Long position ) {
+    PartedStreamChunk(int index, Long position) {
         this.index = index
         this.position = position
     }

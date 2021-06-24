@@ -17,7 +17,6 @@
 
 package de.jonasborn.patema.ftp.tape
 
-
 import de.jonasborn.patema.ftp.FTPDirectory
 import de.jonasborn.patema.ftp.FTPElement
 import de.jonasborn.patema.ftp.FTPRoot
@@ -25,15 +24,15 @@ import de.jonasborn.patema.ftp.project.FTPProject
 import de.jonasborn.patema.register.Register
 import de.jonasborn.patema.register.RegisterEntry
 import de.jonasborn.patema.tape.Tape
-import de.jonasborn.patema.tape.TapeReader
 import de.jonasborn.patema.tape.TapeInputStream
+import de.jonasborn.patema.tape.TapeReader
 import de.jonasborn.patema.tape.Tapes
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
 import static de.jonasborn.patema.ftp.FTPElement.Type.TAPE
 
-public class FTPTape extends FTPDirectory<FTPTapeFile> {
+class FTPTape extends FTPDirectory<FTPTapeFile> {
 
     Logger logger = LogManager.getLogger(FTPTape.class)
 
@@ -88,11 +87,11 @@ public class FTPTape extends FTPDirectory<FTPTapeFile> {
         throw new IOException("Not implemented yet")
     }
 
-    public Tape getDevice() {
+    Tape getDevice() {
         return Tapes.get(devicePath)
     }
 
-    public List<FTPTapeFile> list() {
+    List<FTPTapeFile> list() {
         try {
             logger.debug("Listing files on tape {}", devicePath)
             def device = getDevice()
@@ -112,7 +111,7 @@ public class FTPTape extends FTPDirectory<FTPTapeFile> {
     }
 
 
-    public void write(FTPProject project) {
+    void write(FTPProject project) {
         try {
             def device = getDevice()
             if (device == null) throw new IOException("Unable to find device " + getDevicePath())
@@ -150,7 +149,7 @@ public class FTPTape extends FTPDirectory<FTPTapeFile> {
         }
     }
 
-    public TapeInputStream read(FTPTapeFile file, int start) {
+    TapeInputStream read(FTPTapeFile file, int start) {
         if (register == null) register = device.readRegister(root.config.getPassword())
         if (io == null) io = new TapeReader(device, register)
 

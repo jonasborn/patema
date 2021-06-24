@@ -43,7 +43,7 @@ class FTPTapeOverview {
     }
 
     private void build(String message) {
-        if (total == null ) message = "0% pending"
+        if (total == null) message = "0% pending"
         def percent = (position / total) * 100
         this.message = new DecimalFormat("#.##").format(percent) + "% " + message
     }

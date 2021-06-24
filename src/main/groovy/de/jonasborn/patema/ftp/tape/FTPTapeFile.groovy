@@ -18,11 +18,10 @@
 package de.jonasborn.patema.ftp.tape
 
 import de.jonasborn.patema.ftp.FTPElement
-import de.jonasborn.patema.ftp.project.FTPProject
 
 class FTPTapeFile extends FTPElement {
 
-    FTPTape tape;
+    FTPTape tape
     String title
     Long size
 
