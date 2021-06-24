@@ -59,6 +59,7 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
         try {
             prepare()
         } catch (Exception e) {
+            logger.info("Unable to access project {} for user {}", name, root.config.username, e)
             accessible = false
         }
     }
@@ -77,7 +78,7 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
             }
         } catch (Exception e) {
             logger.debug("Unable to create load/create register", this)
-            throw new ProjectAccessException("Unable to access project, wrong password or corrupted data")
+            throw new ProjectAccessException("Unable to access project, wrong password or corrupted data", e)
         }
     }
 
@@ -141,8 +142,9 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
 
     public void registerFile(FTPProjectFile file) {
         prepare()
+        def parts = new LinkedList(file.partedRaw.listFiles().collect {it.length()})
         V1RegisterEntry entry = new V1RegisterEntry(
-                file.title, register.getEntries().size(), file.partedCrypto.hash(), file.getSize(), file.partedCrypto.getSizeOnMedia(), root.config.password
+                file.title, register.getEntries().size(), file.partedCrypto.hash(), file.getSize(), parts, file.partedCrypto.getSizeOnMedia(), root.config.password
         )
         register.addEntry(entry)
         writeRegister()
@@ -150,8 +152,9 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
 
     public void unregisterFile(FTPProjectFile file) {
         prepare()
+        def parts = file.partedRaw.listFiles().collect {it.length()}
         V1RegisterEntry entry = new V1RegisterEntry(
-                file.title, register.getEntries().size(), file.partedCrypto.hash(), file.getSize(), file.partedCrypto.getSizeOnMedia(), root.config.password
+                file.title, register.getEntries().size(), file.partedCrypto.hash(), file.getSize(), parts, file.partedCrypto.getSizeOnMedia(), root.config.password
         )
         register.removeEntry(entry)
         writeRegister()
@@ -171,6 +174,10 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
     public static class ProjectAccessException extends IOException {
         ProjectAccessException(String message) {
             super(message)
+        }
+
+        ProjectAccessException(String message, Throwable cause) {
+            super(message, cause)
         }
     }
 

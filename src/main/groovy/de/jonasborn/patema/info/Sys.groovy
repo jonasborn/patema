@@ -21,9 +21,7 @@ class Sys {
 
     public static Info sg_log(String device, String sub) {
         def command = [Config.current.binaryConfig._prefix, Config.current.binaryConfig.sg_logs, "-b", "-p", sub, device]
-        println command.join(" ")
         def l = RuntimeUtils.execute(command as String[])
-        println l
         Map<String, String> m = l.findAll { it.contains(":") }
                 .collect { it.split(":\\s") }
                 .findAll { it.size() == 2 }
@@ -95,9 +93,6 @@ class Sys {
 
 
     static void main(String[] args) {
-        def t = [:]
-        //t.putAll(tapeinfo("/dev/nst0"))
-        println gson.toJson(lsscsi())
     }
 
 

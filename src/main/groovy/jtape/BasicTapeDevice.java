@@ -87,22 +87,22 @@ public class BasicTapeDevice {
         tapeMTWEOF();
     }
 
-    public void skipFileToStart() throws IOException {
+    public void fsf() throws IOException {
         ensureOpen();
         tapeMTFSF();
     }
 
-    public void skipFileToEnd() throws IOException {
+    public void fsfm() throws IOException {
         ensureOpen();
         tapeMTFSFM();
     }
 
-    public void previousFileToStart() throws IOException {
+    public void bsf() throws IOException {
         ensureOpen();
         tapeMTBSF();
     }
 
-    public void previousFileToEnd() throws IOException {
+    public void bsfm() throws IOException {
         ensureOpen();
         tapeMTBSFM();
     }
@@ -164,7 +164,6 @@ public class BasicTapeDevice {
     }
 
 
-
     class TapeInputStream extends InputStream {
         private byte[] temp = new byte[1];
 
@@ -194,6 +193,7 @@ public class BasicTapeDevice {
                 return 0;
             }
             if (eof) {
+                System.out.println("EOF");
                 return -1;
             }
 
@@ -208,7 +208,14 @@ public class BasicTapeDevice {
         }
 
         public long skip(long numbytes) throws IOException {
-            return 0;
+           if ((numbytes % 256) != 0) throw new IOException("Bytes to skip must be a multiple of 256");
+           long skipped = 0;
+           byte[] buffer = new byte[256];
+           while (skipped < numbytes) {
+               read(buffer);
+               skipped += 256;
+           }
+           return skipped;
         }
 
         public void close() throws IOException {

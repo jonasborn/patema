@@ -15,24 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.io.crypto;
+package de.jonasborn.patema.crypto;
 
 
-import com.google.common.base.Charsets;
-import com.google.common.hash.Hashing;
-import com.google.common.io.BaseEncoding;
 import de.jonasborn.patema.util.ByteUtils;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class PartedECBCrypto implements PartedCrypto {
+public class ECBCrypto implements Crypto {
 
     SecretKeySpec key;
     byte[] iv;
@@ -41,7 +37,7 @@ public class PartedECBCrypto implements PartedCrypto {
     Cipher encrypt;
     Cipher decrypt;
 
-    public PartedECBCrypto() {
+    public ECBCrypto() {
     }
 
     private byte[] createIv(int i) throws NoSuchAlgorithmException {

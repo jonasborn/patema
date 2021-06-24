@@ -38,6 +38,15 @@ class FTPFileFactory {
                 }
             })
 
+    LoadingCache<String, FTPTape> tapeCache = CacheBuilder.newBuilder()
+            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .build(new CacheLoader<String, FTPTape>() {
+                @Override
+                FTPTape load(String key) throws Exception {
+                    return new FTPTape(root(), key)
+                }
+            })
+
     FTPConfig config;
     File delegate
 
@@ -55,7 +64,7 @@ class FTPFileFactory {
     }
 
     public FTPTape tape(String path) {
-        return new FTPTape(root(), path)
+        return tapeCache.get(path)
     }
 
     public FTPProjectFile projectFile(FTPProject project, String title) {

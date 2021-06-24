@@ -23,17 +23,19 @@ class V1RegisterEntry implements RegisterEntry{
     int position
     byte[] hash
     long length
-    long lengthOnMedia
+    LinkedList<Long> parts
+    long lengthOnMedia //Used to show the file size without decrypting everything
     String password
 
     V1RegisterEntry() {
     }
 
-    V1RegisterEntry(String name, int position, byte[] hash, long length, long lengthOnMedia, String password) {
+    V1RegisterEntry(String name, int position, byte[] hash, long length, List<Long> parts, long lengthOnMedia, String password) {
         this.name = name
         this.position = position
         this.hash = hash
         this.length = length
+        this.parts = parts
         this.lengthOnMedia = lengthOnMedia
         this.password = password
     }

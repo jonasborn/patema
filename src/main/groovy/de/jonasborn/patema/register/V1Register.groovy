@@ -32,7 +32,7 @@ class V1Register implements Register<V1RegisterEntry> {
     private String password;
     private byte[] salt;
     private byte[] iv;
-    LinkedList<RegisterEntry> entries = []
+    LinkedList<V1RegisterEntry> entries = []
 
     V1Register() {
     }
@@ -43,6 +43,7 @@ class V1Register implements Register<V1RegisterEntry> {
         salt = new byte[32]
         random.nextBytes(salt)
         iv = new byte[32]
+        random.nextBytes(iv)
     }
 
 
@@ -53,14 +54,20 @@ class V1Register implements Register<V1RegisterEntry> {
     }
 
     @Override
-    void addEntry(RegisterEntry entry) {
+    void addEntry(V1RegisterEntry entry) {
         entries.add(entry)
     }
 
     @Override
-    void removeEntry(RegisterEntry entry) {
-        entries.add(entry)
+    void removeEntry(V1RegisterEntry entry) {
+        entries.remove(entry)
     }
+
+    @Override
+    V1RegisterEntry getEntry(int index) {
+        return entries.get(index)
+    }
+
 
 
 

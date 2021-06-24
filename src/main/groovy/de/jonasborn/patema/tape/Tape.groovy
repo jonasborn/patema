@@ -1,19 +1,17 @@
 package de.jonasborn.patema.tape
 
-import com.google.common.hash.Hashing
-import com.google.common.io.ByteStreams
-import com.rockaport.alice.Alice
-import com.rockaport.alice.AliceContext
-import com.rockaport.alice.AliceContextBuilder
+
 import de.jonasborn.patema.register.Register
 import de.jonasborn.patema.register.Registers
+import de.jonasborn.patema.util.ByteUtils
+import de.jonasborn.patema.util.PaddingUtils
 import jtape.BasicTapeDevice
 import jtape.StreamCopier
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
 
-class Tape {
+class Tape implements Closeable {
 
 
     /*
@@ -56,17 +54,37 @@ class Tape {
 
     static Logger logger = LogManager.getLogger(Tape.class)
 
-    static final int bufferSize = 1024 * 8
+    static final int bufferSize = 256
+
+    static Map<String, Long> tapeCounters = [:]
 
     String id
     String path
 
-    BasicTapeDevice device;
-
+    BasicTapeDevice device
 
     Tape(String id, String path) {
         this.id = id
         this.path = path
+    }
+
+    public long getCounter() {
+        Long l = tapeCounters.get(path)
+        if (l == null) {
+            tapeCounters.put(path, 0)
+            return 0
+        }
+        return l
+    }
+
+    public long addCounter(long value) {
+        logger.debug("Added {} to the write counter", value)
+        def current = getCounter()
+        tapeCounters.put(path, current + value)
+    }
+
+    public long clearCounter() {
+        tapeCounters.put(path, 0)
     }
 
     public void initialize(boolean rewind = true) {
@@ -85,9 +103,56 @@ class Tape {
         }
     }
 
+    public void moveToFileStart() {
+        def current = device.getFileNumber();
+        def start = device.status.eot
+        if (current == 0) {
+            logger.info("Rewinding to move to start for {}", path)
+            device.rewind()
+        } else if (!start) {
+            logger.info("Rewinding and forwarding to start for {}", path)
+            device.bsfm()
+        }
+    }
+
+    public void moveToFileStart(int fileIndex) {
+        def current = device.getFileNumber();
+        if (current == fileIndex) {
+            moveToFileStart()
+        } else if (current > fileIndex) {
+            logger.info("Rewinding {} files for {}", current - fileIndex, path)
+            for (i in 0..<current - fileIndex) device.bsf()
+            moveToFileStart()
+        } else {
+            logger.info("Forwarding {} files for {}", fileIndex - current, path)
+            for (i in 0..<fileIndex - current) device.fsf()
+        }
+    }
+
+    public void moveToFileEnd() {
+        try {
+            logger.debug("Moving to end of file for {}", path)
+            def current = device.getFileNumber()
+            def end = device.status.bot
+            if (device.eof || device.eom) return
+            device.fsfm()
+        } catch (Exception ignored) {
+            logger.debug("Unable to move to end of file for {}", path)
+        }
+    }
+
+    public void fill() {
+        def padding = PaddingUtils.calculate(counter, 256)
+        logger.debug("Filling up {} remaining bytes to match base {} for {} bytes already written for {}", padding.padding, 256, counter, path)
+        def additional = new byte[padding.padding]
+        writeBytes(additional)
+        clearCounter()
+    }
+
     private void writeBytes(byte[] data) {
         ByteArrayInputStream bin = new ByteArrayInputStream(data)
         StreamCopier.copy(bin, device.outputStream, bufferSize);
+        addCounter(data.length)
     }
 
     private byte[] readBytes() {
@@ -99,7 +164,10 @@ class Tape {
     public void writeRegister(Register register, String password) throws IOException {
         logger.info("Writing register to {}", path)
         device.rewind()
-        writeBytes(Registers.pack(register, password))
+        def bytes = Registers.pack(register, password);
+        writeBytes(bytes)
+        addCounter(bytes.length)
+        fill()
         device.writeFileMarker()
     }
 
@@ -109,20 +177,38 @@ class Tape {
         return Registers.unpack(readBytes(), password)
     }
 
-    public void read(Register register, int position, OutputStream outputStream) {
-
-    }
-
     public void write(Register register, int position, InputStream inputStream) {
         assert inputStream != null
         StreamCopier.copy(inputStream, device.outputStream, bufferSize);
+        fill()
         device.writeFileMarker()
+    }
+
+    public void writeChunk(int file, int chunk, InputStream inputStream) {
+        assert inputStream != null
+        long written = ByteUtils.copyFixed(inputStream, device.outputStream, bufferSize);
+        addCounter(written)
+        fill()
+    }
+
+    public void finishFile(int file) {
+        device.writeFileMarker()
+        logger.info("Successfully written file {} to {}", file, path)
     }
 
 
     static void main(String[] args) {
 
 
+        def tape = new Tape("nst0", "/dev/nst0")
+        tape.initialize(false)
+        tape.moveToFileStart(0)
+
+
     }
 
+    @Override
+    void close() throws IOException {
+        device.close()
+    }
 }

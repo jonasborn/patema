@@ -21,6 +21,7 @@ import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
 import com.google.common.io.BaseEncoding
+import com.google.common.primitives.Ints
 import com.rockaport.alice.Alice
 import com.rockaport.alice.AliceContext
 import com.rockaport.alice.AliceContextBuilder
@@ -52,6 +53,7 @@ class Registers {
         if (register instanceof V1Register) {
             byte[] data = packV1(register, password)
             bout = new ByteArrayOutputStream(data.length + 1)
+            bout.write(Ints.toByteArray(data.length)) //Data might be padded
             bout.write([1] as byte[])
             bout.write(data)
         }
@@ -66,10 +68,9 @@ class Registers {
             Output output = new Output(bout)
             v1kryo.writeObject(output, register)
             output.close()
-            println BaseEncoding.base16().encode(bout.toByteArray())
             return v1Alice.encrypt(bout.toByteArray(), password.toCharArray())
         } catch (Exception e) {
-            throw new RegisterException("Unable to encrypt register: " + e.getMessage())
+            throw new RegisterException("Unable to encrypt register", e)
         }
     }
 
@@ -77,8 +78,9 @@ class Registers {
 
     public static Register unpack(byte[] data, String password) {
         def bin = new ByteArrayInputStream(data)
+        int length = Ints.fromByteArray(bin.readNBytes(4))
         int version = (int) bin.readNBytes(1)[0]
-        byte[] rest = bin.readNBytes(data.length - 1)
+        byte[] rest = bin.readNBytes(length)
 
         switch (version) {
             case 1:
@@ -93,7 +95,7 @@ class Registers {
             Input input = new Input(v1Alice.decrypt(data, password.toCharArray()))
             return v1kryo.readObject(input, V1Register.class)
         } catch (Exception e) {
-            throw new RegisterException("Unable to encrypt register: " + e.getMessage())
+            throw new RegisterException("Unable to encrypt register", e)
         }
     }
 
@@ -106,6 +108,10 @@ class Registers {
     public static class RegisterException extends IOException {
         RegisterException(String message) {
             super(message)
+        }
+
+        RegisterException(String message, Throwable cause) {
+            super(message, cause)
         }
     }
 

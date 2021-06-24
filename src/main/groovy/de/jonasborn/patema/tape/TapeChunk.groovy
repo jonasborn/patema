@@ -15,17 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.io
+package de.jonasborn.patema.tape
 
-class PartedFileChunk {
+class TapeChunk {
 
     int index
     Long position
-    File file
 
-    PartedFileChunk(int index, Long position, File file) {
+    TapeChunk(int index, Long position) {
         this.index = index
         this.position = position
-        this.file = file
     }
 }

@@ -15,41 +15,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.ftp.tape
+package de.jonasborn.patema.tape
 
-import de.jonasborn.patema.ftp.FTPElement
-import de.jonasborn.patema.ftp.project.FTPProject
+import de.jonasborn.patema.ios.endecode.Decoder
 
-class FTPTapeFile extends FTPElement {
+class TapeInputStream extends InputStream{
 
-    FTPTape tape;
-    String title
-    Long size
+    TapeReader reader
+    Decoder decoder
 
-    FTPTapeFile(FTPTape tape, String title) {
-        super(Type.TAPE_FILE)
-        this.tape = tape
-        this.title = title
+    TapeInputStream(TapeReader reader, Decoder decoder) {
+        this.reader = reader
+        this.decoder = decoder
     }
 
     @Override
-    String getPath() {
-        return tape.getPath() + "/" + title
+    int read() throws IOException {
+        return reader.read(decoder, 1)[0]
     }
 
     @Override
-    boolean exists() {
-        return false
-    }
-
-    @Override
-    FTPElement getParent() {
-        return tape
-    }
-
-    @Override
-    void delete() {
-
+    int read(byte[] b) throws IOException {
+        byte[] temp = reader.read(decoder, b.length);
+        System.arraycopy(temp, 0, b, 0, temp.length)
+        if (temp.length == 0) return -1
+        return temp.length
     }
 
 

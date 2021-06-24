@@ -15,42 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.ftp.tape
+package de.jonasborn.patema.crypto;
 
-import de.jonasborn.patema.ftp.FTPElement
-import de.jonasborn.patema.ftp.project.FTPProject
+public interface Crypto {
 
-class FTPTapeFile extends FTPElement {
+    public void initialize(String password, byte[] iv, byte[] salt) throws Exception;
 
-    FTPTape tape;
-    String title
-    Long size
+    public byte[] encrypt(int index, byte[] data) throws Exception;
 
-    FTPTapeFile(FTPTape tape, String title) {
-        super(Type.TAPE_FILE)
-        this.tape = tape
-        this.title = title
-    }
-
-    @Override
-    String getPath() {
-        return tape.getPath() + "/" + title
-    }
-
-    @Override
-    boolean exists() {
-        return false
-    }
-
-    @Override
-    FTPElement getParent() {
-        return tape
-    }
-
-    @Override
-    void delete() {
-
-    }
-
+    public byte[] decrypt(int index, byte[] data) throws Exception;
 
 }

@@ -15,7 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.io
+package de.jonasborn.patema.ios.parted.file.implementation
+
+import de.jonasborn.patema.ios.parted.file.PartedFile
 
 class PartedRawFile extends PartedFile {
 
@@ -70,5 +72,11 @@ class PartedRawFile extends PartedFile {
     @Override
     String getName() {
         return directory.name
+    }
+
+    public InputStream readChunk(int index) {
+        def file = new File(directory, index + ".ptma")
+        if (!file.exists()) return null
+        return new FileInputStream(file)
     }
 }

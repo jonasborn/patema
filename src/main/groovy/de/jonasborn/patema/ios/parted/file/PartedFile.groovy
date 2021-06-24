@@ -15,16 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.io
+package de.jonasborn.patema.ios.parted.file
 
-import com.google.common.io.BaseEncoding
+
 import de.jonasborn.patema.util.Buffer
 import groovy.transform.CompileStatic
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
-import javax.servlet.ServletOutputStream
-import java.nio.ByteBuffer
 import java.security.MessageDigest
 
 

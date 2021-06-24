@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.io.crypto;
+package de.jonasborn.patema.crypto;
 
 import org.apache.commons.crypto.cipher.CryptoCipher;
 import org.apache.commons.crypto.cipher.CryptoCipherFactory;
@@ -31,7 +31,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
-class PartedCTRCryptoCache {
+class CTRCryptoCache {
 
 
     final static Properties properties;
@@ -49,7 +49,7 @@ class PartedCTRCryptoCache {
     final static String transform = "AES/CTR/NoPadding";
     boolean run = true;
 
-    PartedCTRCryptoCache(int mode, SecretKeySpec key, IvParameterSpec iv) throws Exception {
+    CTRCryptoCache(int mode, SecretKeySpec key, IvParameterSpec iv) throws Exception {
         this.mode = mode;
         this.key = key;
         this.iv = iv;

@@ -25,6 +25,8 @@ interface RegisterEntry {
 
     public long getLength()
 
+    public List<Long> getParts()
+
     public long getLengthOnMedia();
 
     public byte[] getHash();

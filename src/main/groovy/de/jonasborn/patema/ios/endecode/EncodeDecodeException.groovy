@@ -15,42 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.ftp.tape
+package de.jonasborn.patema.ios.endecode
 
-import de.jonasborn.patema.ftp.FTPElement
-import de.jonasborn.patema.ftp.project.FTPProject
+class EncodeDecodeException extends IOException {
 
-class FTPTapeFile extends FTPElement {
-
-    FTPTape tape;
-    String title
-    Long size
-
-    FTPTapeFile(FTPTape tape, String title) {
-        super(Type.TAPE_FILE)
-        this.tape = tape
-        this.title = title
+    EncodeDecodeException(String message) {
+        super(message)
     }
 
-    @Override
-    String getPath() {
-        return tape.getPath() + "/" + title
+    EncodeDecodeException(String message, Throwable cause) {
+        super(message, cause)
     }
-
-    @Override
-    boolean exists() {
-        return false
-    }
-
-    @Override
-    FTPElement getParent() {
-        return tape
-    }
-
-    @Override
-    void delete() {
-
-    }
-
-
 }

@@ -15,41 +15,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema
+package de.jonasborn.patema.util
 
-import com.guichaguri.minimalftp.FTPServer
-import de.jonasborn.patema.config.Config
-import de.jonasborn.patema.ftp.FTPAuth
-import de.jonasborn.patema.util.LogUtils
+import de.jonasborn.patema.Parser
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.apache.logging.log4j.core.LoggerContext
 import org.apache.logging.log4j.core.config.Configuration
-import org.apache.logging.log4j.core.config.Configurator
 import org.apache.logging.log4j.core.config.LoggerConfig
 
+class LogUtils {
 
-class Main {
+    private static final Logger logger = LogManager.getLogger(LogUtils.class)
 
-    static Logger logger = LogManager.getLogger(Main.class)
-
-    public static void main(String[] args) {
-
-        Parser.prepare(args)
-
-        Config.loadConfig(Parser.getString("config"))
-
-        LogUtils.setRootLevel(Parser.getString("level").toUpperCase())
-        
+    public static void setRootLevel(String level) {
         logger.debug("Debugging active")
-        println Config.current.getUsers().auth("jonas", "jonas")
-        File root = new File("root");
-        def auth = new FTPAuth(root);
-        FTPServer server = new FTPServer(auth);
-        server.listenSync(Parser.getInteger("port"));
-        logger.info("Started ftp server using port {}", server.port)
-
-
+        LoggerContext context = (LoggerContext) LogManager.getContext(false);
+        Configuration config = context.getConfiguration();
+        LoggerConfig rootConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+        rootConfig.setLevel(Level.valueOf(level.toUpperCase()));
+        context.updateLoggers();
     }
+
 }

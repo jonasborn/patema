@@ -19,10 +19,10 @@ package de.jonasborn.patema.ftp.project
 
 
 import de.jonasborn.patema.ftp.FTPElement
-import de.jonasborn.patema.io.PartedFileInputStream
-import de.jonasborn.patema.io.PartedFileOutputStream
-import de.jonasborn.patema.io.PartedCompressedCryptoFile
-import de.jonasborn.patema.io.PartedRawFile
+import de.jonasborn.patema.ios.parted.file.PartedFileInputStream
+import de.jonasborn.patema.ios.parted.file.PartedFileOutputStream
+import de.jonasborn.patema.ios.parted.file.implementation.PartedCompressedCryptoFile
+import de.jonasborn.patema.ios.parted.file.implementation.PartedRawFile
 import groovy.transform.CompileStatic
 
 import java.security.MessageDigest
@@ -111,6 +111,14 @@ class FTPProjectFile extends FTPElement {
         if (cinRaw == null) cinRaw = new PartedFileInputStream(partedRaw)
         partedRaw.seek(start)
         return cinRaw
+    }
+
+    public int getRawChunkAmount() {
+        return partedRaw.listFiles().size()
+    }
+
+    public InputStream readRawChunk(int chunk) {
+        return partedRaw.readChunk(chunk)
     }
 
     @CompileStatic

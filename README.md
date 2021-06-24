@@ -66,7 +66,7 @@ Both, the write and read functions drove me crazy!
 #### Read
 As the read function not only needs to wirk with fixed chunk sizes (for the encrypted ones) but also with dynamic sizes
 (for reading encrypted content) the read function is a bit more complicated but very well commented. Have a look
-at **de.jonasborn.patema.io.PartedFile**
+at **de.jonasborn.patema.ios.parted.file.PartedFile**
 
 
 ## Installation

@@ -15,14 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.io.crypto;
+package de.jonasborn.patema.ios.parted.file
 
-public interface PartedCrypto {
+class PartedFileChunk {
 
-    public void initialize(String password, byte[] iv, byte[] salt) throws Exception;
+    int index
+    Long position
+    File file
 
-    public byte[] encrypt(int index, byte[] data) throws Exception;
-
-    public byte[] decrypt(int index, byte[] data) throws Exception;
-
+    PartedFileChunk(int index, Long position, File file) {
+        this.index = index
+        this.position = position
+        this.file = file
+    }
 }

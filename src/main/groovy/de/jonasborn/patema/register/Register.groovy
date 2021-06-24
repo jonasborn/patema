@@ -21,11 +21,13 @@ interface Register<T extends RegisterEntry> {
 
     public int getVersion()
 
-    public List<RegisterEntry> getEntries()
+    public List<T> getEntries()
 
-    public void addEntry(RegisterEntry entry)
+    public void addEntry(T entry)
 
-    public void removeEntry(RegisterEntry entry)
+    public void removeEntry(T entry)
+
+    public T getEntry(int index)
 
     byte[] getIv(String title)
 

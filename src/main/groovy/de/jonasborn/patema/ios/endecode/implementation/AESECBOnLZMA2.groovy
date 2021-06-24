@@ -15,96 +15,54 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.io
+package de.jonasborn.patema.ios.endecode.implementation
 
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import com.google.common.cache.LoadingCache
-import de.jonasborn.patema.io.crypto.PartedCrypto
-import de.jonasborn.patema.io.crypto.PartedECBCrypto
+import de.jonasborn.patema.crypto.Crypto
+import de.jonasborn.patema.crypto.ECBCrypto
+import de.jonasborn.patema.ios.endecode.Decoder
+import de.jonasborn.patema.ios.endecode.EncodeDecodeException
+import de.jonasborn.patema.ios.endecode.Encoder
 import de.jonasborn.patema.util.XZUtils
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 
 import java.util.concurrent.TimeUnit
 
-class PartedCompressedCryptoFile extends PartedFile {
+class AESECBOnLZMA2 implements Encoder, Decoder {
 
-    private static LoadingCache<CryptoInfo, PartedCrypto> cryptoCache = CacheBuilder.newBuilder()
-            .expireAfterAccess(5, TimeUnit.MINUTES).build(new CacheLoader<CryptoInfo, PartedCrypto>() {
+
+    static Logger logger = LogManager.getLogger(AESECBOnLZMA2.class)
+
+    private static LoadingCache<CryptoInfo, Crypto> cryptoCache = CacheBuilder.newBuilder()
+            .expireAfterAccess(5, TimeUnit.MINUTES).build(new CacheLoader<CryptoInfo, Crypto>() {
         @Override
-        PartedCrypto load(CryptoInfo info) throws Exception {
-            println "CREATED"
-            def c = new PartedECBCrypto();
+        Crypto load(CryptoInfo info) throws Exception {
+            logger.info("Created new ECPCrypto instance for {}", info.hashCode())
+            def c = new ECBCrypto();
             c.initialize(info.password, info.iv, info.salt)
             return c
         }
     })
 
-    File directory
-    PartedCrypto crypto;
+    Crypto crypto
 
-    PartedCompressedCryptoFile(File directory, String password, byte[] iv, byte[] salt) {
-        this.directory = directory
+    AESECBOnLZMA2(String password, byte[] iv, byte[] salt) {
         crypto = cryptoCache.get(new CryptoInfo(password, iv, salt))
     }
 
     @Override
-    File createFile(int index) {
-        return new File(directory, index + ".ptma")
+    byte[] decode(int index, byte[] data) throws EncodeDecodeException {
+        XZUtils.decompress(crypto.decrypt(index, data))
     }
 
     @Override
-    List<File> listFiles() {
-        List<File> list = this.directory.listFiles()
-        if (list == null) return []
-        list = list.findAll { it.name.endsWith(".ptma") }
-        list.sort(new Comparator<File>()
-        {
-            @Override
-            public int compare(File o1, File o2) {
-                def i1 = (o1 as File).name.replaceAll("[^0-9]", "")
-                def i2 = (o2 as File).name.replaceAll("[^0-9]", "")
-
-                return Integer.parseInt(i1) <=> Integer.parseInt(i2)
-            }
-        })
-        return list
+    byte[] encode(int index, byte[] data) throws EncodeDecodeException {
+        crypto.encrypt(index, XZUtils.compress(data))
     }
 
-
-    @Override
-    Long getSize(File file) {
-        return file.lastModified()
-    }
-
-    @Override
-    Long getSizeOnMedia(File file) {
-        return file.size()
-    }
-
-    @Override
-    byte[] pack(Integer integer, byte[] data) {
-        crypto.encrypt(integer, XZUtils.compress(data))
-    }
-
-    @Override
-    byte[] unpack(Integer integer, byte[] data) {
-        XZUtils.decompress(crypto.decrypt(integer, data))
-    }
-
-    @Override
-    String getName() {
-        return directory.name
-    }
-
-    @Override
-    void close() {
-        def files = listFiles()
-        for (int i = 0; i < files.size(); i++) {
-            final file = files[i]
-            def data = unpack(i, file.bytes)
-            file.setLastModified(data.size())
-        }
-    }
 
     public static class CryptoInfo {
         String password
@@ -138,5 +96,6 @@ class PartedCompressedCryptoFile extends PartedFile {
             return result
         }
     }
+
 
 }

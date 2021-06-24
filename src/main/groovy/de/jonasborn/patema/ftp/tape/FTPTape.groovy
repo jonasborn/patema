@@ -17,20 +17,19 @@
 
 package de.jonasborn.patema.ftp.tape
 
-import com.google.common.io.ByteStreams
+
 import de.jonasborn.patema.ftp.FTPDirectory
 import de.jonasborn.patema.ftp.FTPElement
-import de.jonasborn.patema.ftp.FTPFile
 import de.jonasborn.patema.ftp.FTPRoot
 import de.jonasborn.patema.ftp.project.FTPProject
-import de.jonasborn.patema.ftp.project.FTPProjectFile
+import de.jonasborn.patema.register.Register
 import de.jonasborn.patema.register.RegisterEntry
 import de.jonasborn.patema.tape.Tape
+import de.jonasborn.patema.tape.TapeReader
+import de.jonasborn.patema.tape.TapeInputStream
 import de.jonasborn.patema.tape.Tapes
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
-
-import java.text.DecimalFormat
 
 import static de.jonasborn.patema.ftp.FTPElement.Type.TAPE
 
@@ -45,6 +44,8 @@ public class FTPTape extends FTPDirectory<FTPTapeFile> {
     FTPRoot root
     String devicePath
 
+    Register register
+    TapeReader io
 
     FTPTape(FTPRoot root, String devicePath) {
         super(TAPE)
@@ -92,15 +93,21 @@ public class FTPTape extends FTPDirectory<FTPTapeFile> {
     }
 
     public List<FTPTapeFile> list() {
-        logger.debug("Listing files on tape {}", devicePath)
-        def device = getDevice()
-        device.initialize(false)
-        def register = device.readRegister(root.config.password)
-        register.getEntries().collect { it ->
-            def entry = it as RegisterEntry
-            def file = new FTPTapeFile(this, entry.getName())
-            file.size = entry.getLength()
-            return file
+        try {
+            logger.debug("Listing files on tape {}", devicePath)
+            def device = getDevice()
+            device.initialize(false)
+            def register = device.readRegister(root.config.password)
+            device.close()
+            register.getEntries().collect { it ->
+                def entry = it as RegisterEntry
+                def file = new FTPTapeFile(this, entry.getName())
+                file.size = entry.getLength()
+                return file
+            }
+        } catch (Exception e) {
+            logger.info("Unable to read register from tape {}", devicePath, e)
+            return []
         }
     }
 
@@ -120,6 +127,7 @@ public class FTPTape extends FTPDirectory<FTPTapeFile> {
             logger.debug("Writing register from {} to {}", this, tape)
             overview.step("Writing register")
             device.writeRegister(project.register, root.config.password)
+            this.register = project.register
             overview.step("Wrote register")
             logger.debug("Successfully wrote register {} to {}", this, tape)
             //Load all files from directory, each as a PartedRawFile and then dump them to the tape with markers
@@ -127,14 +135,27 @@ public class FTPTape extends FTPDirectory<FTPTapeFile> {
             for (i in 0..<files.size()) {
                 def file = files[i]
                 overview.step("Writing file " + file.getTitle())
-                device.write(project.register, i, file.readRaw(0))
+                for (j in 0..<file.getRawChunkAmount()) {
+                    device.writeChunk(i, j, file.readRawChunk(j))
+                }
+                device.finishFile(i)
+                //device.write(project.register, i, file.readRaw(0))
             }
+            device.close()
 
 
         } catch (Exception e) {
             overview.fail("Unable to write")
             e.printStackTrace()
         }
+    }
+
+    public TapeInputStream read(FTPTapeFile file, int start) {
+        if (register == null) register = device.readRegister(root.config.getPassword())
+        if (io == null) io = new TapeReader(device, register)
+
+        return null
+
     }
 
 }

@@ -18,12 +18,15 @@
 
 package de.jonasborn.patema.ftp
 
+import com.google.common.cache.LoadingCache
 import com.guichaguri.minimalftp.FTPConnection
 import com.guichaguri.minimalftp.api.IFileSystem
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
 class FTPFileSystem implements IFileSystem<FTPElement> {
+
+     
 
     Logger logger;
     FTPConnection connection

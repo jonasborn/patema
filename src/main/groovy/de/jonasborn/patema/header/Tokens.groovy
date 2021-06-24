@@ -93,14 +93,6 @@ class Tokens {
 
 
     static void main(String[] args) {
-        Token token = createToken("Hallo Du Da")
-        println token.checkPassword()
-
-        def enc = encrypt(token)
-        println BaseEncoding.base16().encode(enc)
-        def dec = decrypt(enc, "Hallo Du Da")
-
-        println dec.checkPassword()
 
     }
 

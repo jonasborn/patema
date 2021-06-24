@@ -62,15 +62,6 @@ class Tapes {
 
     static void main(String[] args) {
 
-        //BasicTapeDevice.prepare()
-
-        println new File("/dev/tape/by-id/").listFiles()
-
-        def path = new File("/dev/tape/by-id/scsi-350050763120c95a7-nst").getCanonicalPath()
-        println path
-        def bt = new BasicTapeDevice(path)
-
-        println bt.status
     }
 
 }

@@ -15,11 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.jonasborn.patema.io.crypto;
+package de.jonasborn.patema.crypto;
 
-import com.google.common.base.Charsets;
-import com.google.common.hash.Hashing;
-import com.google.common.io.BaseEncoding;
 import org.apache.commons.crypto.cipher.CryptoCipher;
 
 import javax.crypto.*;
@@ -33,17 +30,17 @@ import javax.crypto.spec.SecretKeySpec;
     concerns.
  */
 
-class PartedCTRCrypto implements PartedCrypto {
+class CTRCrypto implements Crypto {
 
     SecretKeySpec key;
     byte[] salt;
     byte[] iv;
 
-    PartedCTRCryptoCache encryptionCache;
-    PartedCTRCryptoCache decryptionCache;
+    CTRCryptoCache encryptionCache;
+    CTRCryptoCache decryptionCache;
 
 
-    PartedCTRCrypto() throws Exception {
+    CTRCrypto() throws Exception {
 
     }
 
@@ -59,8 +56,8 @@ class PartedCTRCrypto implements PartedCrypto {
         //SecretKey ivKey = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1").generateSecret(ivSpec);
         //iv = new IvParameterSpec(ivKey.getEncoded());
         IvParameterSpec ivSpec = new IvParameterSpec(iv);
-        this.encryptionCache = new PartedCTRCryptoCache(Cipher.ENCRYPT_MODE, key, ivSpec);
-        this.decryptionCache = new PartedCTRCryptoCache(Cipher.DECRYPT_MODE, key, ivSpec);
+        this.encryptionCache = new CTRCryptoCache(Cipher.ENCRYPT_MODE, key, ivSpec);
+        this.decryptionCache = new CTRCryptoCache(Cipher.DECRYPT_MODE, key, ivSpec);
     }
 
     public byte[] encrypt(int index, byte[] data) throws Exception {
