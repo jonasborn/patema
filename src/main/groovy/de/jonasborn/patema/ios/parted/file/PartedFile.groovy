@@ -40,7 +40,11 @@ abstract class PartedFile {
 
     public abstract List<File> listFiles()
 
-    public abstract Long getSize(File file)
+    public abstract Long getSizeOfContent(File file) //Size of data only
+
+    public abstract Long getSizeWithoutPadding(File file)
+
+    public abstract Long getSizeWithPadding(File file)
 
     public abstract Long getSizeOnMedia(File file)
 
@@ -62,19 +66,31 @@ abstract class PartedFile {
     public void loadSizes() {
         if (sizes == null) {
             sizes = [:]
-            listFiles().each { sizes[it] = getSize(it) }
+            listFiles().each { sizes[it] = getSizeOfContent(it) }
         }
     }
 
-    public Long getSize() {
+    public Long getSizeOfContent() {
         loadSizes()
-        def size = sizes.collect { getSize(it.key) }.sum()
+        def size = sizes.collect { getSizeOfContent(it.key) }.sum()
         return (size == null) ? null : size as long
     }
 
     public Long getSizeOnMedia() {
         loadSizes()
         def size = sizes.collect { getSizeOnMedia(it.key) }.sum()
+        return (size == null) ? null : size as long
+    }
+
+    public Long getSizeWithPadding() {
+        loadSizes()
+        def size = sizes.collect { getSizeWithPadding(it.key) }.sum()
+        return (size == null) ? null : size as long
+    }
+
+    public Long getSizeWithoutPadding() {
+        loadSizes()
+        def size = sizes.collect { getSizeWithoutPadding(it.key) }.sum()
         return (size == null) ? null : size as long
     }
 
@@ -185,7 +201,12 @@ abstract class PartedFile {
     }
 
     public void close() {
-
+        listFiles().each {
+            def original = getSizeWithoutPadding()
+            def padded = getSizeWithPadding()
+            def difference = padded - original
+            logger.info("Got {} bytes, therefore {} when padded. {} bytes needed to pad, not implemented yet", original, padded, difference)
+        }
     }
 
     public byte[] hash() {

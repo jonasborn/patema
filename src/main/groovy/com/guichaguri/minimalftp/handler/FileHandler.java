@@ -213,7 +213,6 @@ public class FileHandler {
 
     private void retr(String path) throws IOException {
         Object file = getFile(path);
-
         con.sendResponse(150, "Sending the file stream for " + path + " (" + fs.getSize(file) + " bytes)");
         sendStream(Utils.readFileSystem(fs, file, start, con.isAsciiMode()));
         start = 0;

@@ -100,8 +100,10 @@ class FTPTape extends FTPDirectory<FTPTapeFile> {
             device.close()
             register.getEntries().collect { it ->
                 def entry = it as RegisterEntry
-                def file = new FTPTapeFile(this, entry.getName())
+                logger.debug("Found file {} with size {}", entry.getName(), entry.getLength())
+                def file = root.factory.tapeFile(this, entry.getName())
                 file.size = entry.getLength()
+                println "SET SIZE " + file.size + " TO FTPFILE " + file.hashCode()
                 return file
             }
         } catch (Exception e) {
@@ -123,12 +125,12 @@ class FTPTape extends FTPDirectory<FTPTapeFile> {
             logger.debug("Initializing device {}", devicePath)
             overview.step("Initializing")
             device.initialize()
-            logger.debug("Writing register from {} to {}", this, tape)
+            logger.debug("Writing register from {} to {}", this, typeTape())
             overview.step("Writing register")
             device.writeRegister(project.register, root.config.password)
             this.register = project.register
             overview.step("Wrote register")
-            logger.debug("Successfully wrote register {} to {}", this, tape)
+            logger.debug("Successfully wrote register {} to {}", this, typeTape())
             //Load all files from directory, each as a PartedRawFile and then dump them to the tape with markers
 
             for (i in 0..<files.size()) {
@@ -157,5 +159,13 @@ class FTPTape extends FTPDirectory<FTPTapeFile> {
 
     }
 
+    boolean equals(Object o) {
+        return o.hashCode() == this.hashCode()
+    }
+
+    int hashCode() {
+        println "HC" + devicePath.hashCode() + " - " + devicePath
+        return (devicePath != null ? devicePath.hashCode() : 0)
+    }
 }
 

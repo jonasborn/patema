@@ -18,7 +18,9 @@
 package de.jonasborn.patema.ftp
 
 import de.jonasborn.patema.ftp.project.FTPProject
+import de.jonasborn.patema.ftp.project.FTPProjectDirectory
 import de.jonasborn.patema.ftp.project.FTPProjectFile
+import de.jonasborn.patema.ftp.project.FTPProjectElement
 import de.jonasborn.patema.ftp.tape.FTPTape
 import de.jonasborn.patema.ftp.tape.FTPTapeFile
 
@@ -52,24 +54,33 @@ abstract class FTPElement {
         return type == ROOT || type == PROJECT || type == TAPE
     }
 
-    public boolean isRoot() {
+    public boolean typeRoot() {
         return type == ROOT
     }
 
-    public boolean isProject() {
+
+    public boolean typeProject() {
         return type == PROJECT
     }
 
-    public boolean isTape() {
+    public boolean typeTape() {
         return type == TAPE
     }
 
-    public boolean isTapeFile() {
+    public boolean typeTapeFile() {
         return type == TAPE_FILE
     }
 
-    public boolean isProjectFile() {
+    public boolean typeProjectFile() {
         return type == PROJECT_FILE
+    }
+
+    public boolean typeProjectDirectory() {
+        return type == PROJECT_DIR
+    }
+
+    public boolean typeProjectElement() {
+        return type == PROJECT_ELEMENT || type == PROJECT_FILE || type == PROJECT_DIR
     }
 
     public FTPRoot asRoot() {
@@ -84,8 +95,16 @@ abstract class FTPElement {
         return (FTPTape) this
     }
 
+    public FTPProjectElement asProjectElement() {
+        return (FTPProjectElement) this
+    }
+
     public FTPProjectFile asProjectFile() {
         return (FTPProjectFile) this
+    }
+
+    public FTPProjectDirectory asProjectDirectory() {
+        return (FTPProjectDirectory) this
     }
 
     public FTPTapeFile asTapeFile() {
@@ -109,7 +128,9 @@ abstract class FTPElement {
     public static enum Type {
         ROOT,
         PROJECT,
+        PROJECT_ELEMENT,
         PROJECT_FILE,
+        PROJECT_DIR,
         TAPE,
         TAPE_FILE
     }

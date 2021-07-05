@@ -24,14 +24,17 @@ import de.jonasborn.patema.tape.Tapes
 import static de.jonasborn.patema.ftp.FTPElement.Type.ROOT
 
 public class FTPRoot extends FTPDirectory<FTPElement> {
+
+    FTPFileFactory factory
     FTPConfig config
     File delegate
 
-    FTPRoot(FTPConfig config, File delegate) {
+    FTPRoot(FTPFileFactory factory, FTPConfig config, File delegate) {
         super(ROOT)
         assert delegate != null
         this.config = config
         this.delegate = delegate
+        this.factory = factory
     }
 
     @Override
@@ -66,7 +69,7 @@ public class FTPRoot extends FTPDirectory<FTPElement> {
             return new FTPProject(this, it.name)
         }
         list.addAll(
-                Tapes.list().collect {new FTPTape(this, it.path)}
+                Tapes.list().collect {factory.tape(it.path)}
         )
         return list
     }

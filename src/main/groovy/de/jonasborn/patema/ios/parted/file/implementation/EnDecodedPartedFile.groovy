@@ -20,6 +20,7 @@ package de.jonasborn.patema.ios.parted.file.implementation
 import de.jonasborn.patema.ios.parted.file.PartedFile
 import de.jonasborn.patema.ios.endecode.Decoder
 import de.jonasborn.patema.ios.endecode.Encoder
+import de.jonasborn.patema.util.PaddingUtils
 
 class EnDecodedPartedFile extends PartedFile {
 
@@ -57,8 +58,19 @@ class EnDecodedPartedFile extends PartedFile {
     }
 
     @Override
-    Long getSize(File file) {
+    Long getSizeOfContent(File file) {
         return file.lastModified()
+    }
+
+    @Override
+    Long getSizeWithoutPadding(File file) {
+        return file.length()
+    }
+
+    @Override
+    Long getSizeWithPadding(File file) {
+        def r = PaddingUtils.calculate(file.length(), 256)
+        return r.total
     }
 
     @Override

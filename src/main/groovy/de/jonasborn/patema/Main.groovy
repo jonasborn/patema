@@ -36,6 +36,12 @@ class Main {
 
     public static void main(String[] args) {
 
+        println "         _                 ";
+        println " ___ ___| |_ ___ _____ ___ ";
+        println "| . | .'|  _| -_|     | .'|";
+        println "|  _|__,|_| |___|_|_|_|__,|";
+        println "|_|                        ";
+
         Parser.prepare(args)
 
         Config.loadConfig(Parser.getString("config"))
@@ -43,13 +49,12 @@ class Main {
         LogUtils.setRootLevel(Parser.getString("level").toUpperCase())
         
         logger.debug("Debugging active")
-        println Config.current.getUsers().auth("jonas", "jonas")
+
         File root = new File("root");
         def auth = new FTPAuth(root);
         FTPServer server = new FTPServer(auth);
+        logger.info("Starting ftp server using port {}", server.port)
         server.listenSync(Parser.getInteger("port"));
-        logger.info("Started ftp server using port {}", server.port)
-
 
     }
 }

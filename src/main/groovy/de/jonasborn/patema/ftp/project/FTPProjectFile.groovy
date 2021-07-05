@@ -27,7 +27,7 @@ import groovy.transform.CompileStatic
 
 import java.security.MessageDigest
 
-class FTPProjectFile extends FTPElement {
+class FTPProjectFile extends FTPProjectElement {
 
     File delegate;
     FTPProject project;
@@ -44,26 +44,26 @@ class FTPProjectFile extends FTPElement {
      * The underlying chunked file will be initialized using the current
      * ftp config
      * @param project
-     * @param title
+     * @param path
      */
-    FTPProjectFile(FTPProject project, String title) {
-        super(Type.PROJECT_FILE)
-        this.title = title
+    FTPProjectFile(FTPProject project, String path) {
+        super(project, path)
+        this.title = path
         this.project = project
-        this.delegate = new File(project.delegate, title)
+        this.delegate = new File(project.delegate, path)
         if (!delegate.exists()) delegate.mkdir()
         this.partedCrypto = new PartedCompressedCryptoFile(
                 delegate,
-                project.register.getPassword(title),
-                project.register.getIv(title),
-                project.register.getSalt(title)
+                project.register.getPassword(path),
+                project.register.getIv(path),
+                project.register.getSalt(path)
         )
         this.partedRaw = new PartedRawFile(delegate)
     }
 
     @Override
     String getPath() {
-        return project.getPath() + "/" + title
+        return project.getPath() + "/" + this.title
     }
 
     @Override
@@ -71,10 +71,7 @@ class FTPProjectFile extends FTPElement {
         return delegate.exists()
     }
 
-    @Override
-    FTPElement getParent() {
-        return project
-    }
+
 
     @Override
     void delete() throws IOException {
@@ -83,7 +80,7 @@ class FTPProjectFile extends FTPElement {
     }
 
     public Long getSize() {
-        def size = partedCrypto.getSize()
+        def size = partedCrypto.getSizeWithPadding()
         if (size == null) return -1
         return size
     }

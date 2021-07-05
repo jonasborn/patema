@@ -23,7 +23,7 @@ class FTPTapeFile extends FTPElement {
 
     FTPTape tape
     String title
-    Long size
+    private Long size
 
     FTPTapeFile(FTPTape tape, String title) {
         super(Type.TAPE_FILE)
@@ -51,5 +51,31 @@ class FTPTapeFile extends FTPElement {
 
     }
 
+    Long getSize() {
+        //TODO LOAD SIZE IF EMPTY
+        return size
+    }
 
+    void setSize(Long size) {
+        this.size = size
+    }
+
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+
+        FTPTapeFile that = (FTPTapeFile) o
+
+        if (tape != that.tape) return false
+        if (title != that.title) return false
+
+        return true
+    }
+
+    int hashCode() {
+        int result
+        result = (tape != null ? tape.hashCode() : 0)
+        result = 31 * result + (title != null ? title.hashCode() : 0)
+        return result
+    }
 }

@@ -23,6 +23,7 @@ import com.google.common.cache.LoadingCache
 import de.jonasborn.patema.crypto.Crypto
 import de.jonasborn.patema.crypto.ECBCrypto
 import de.jonasborn.patema.ios.parted.file.PartedFile
+import de.jonasborn.patema.util.PaddingUtils
 import de.jonasborn.patema.util.XZUtils
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -46,7 +47,7 @@ class PartedCompressedCryptoFile extends PartedFile {
     })
 
     File directory
-    Crypto crypto;
+    Crypto crypto
 
     PartedCompressedCryptoFile(File directory, String password, byte[] iv, byte[] salt) {
         this.directory = directory
@@ -77,9 +78,21 @@ class PartedCompressedCryptoFile extends PartedFile {
     }
 
 
+    //Size of the encrypted data
     @Override
-    Long getSize(File file) {
+    Long getSizeOfContent(File file) {
         return file.lastModified()
+    }
+
+    @Override
+    Long getSizeWithoutPadding(File file) {
+        return file.size()
+    }
+
+    @Override
+    Long getSizeWithPadding(File file) {
+        def r = PaddingUtils.calculate(file.size(), 256)
+        return r.total
     }
 
     @Override

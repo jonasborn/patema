@@ -18,15 +18,31 @@
 
 package de.jonasborn.patema.ftp
 
+import com.google.common.cache.CacheBuilder
+import com.google.common.cache.CacheLoader
 import com.google.common.cache.LoadingCache
 import com.guichaguri.minimalftp.FTPConnection
 import com.guichaguri.minimalftp.api.IFileSystem
+import de.jonasborn.patema.util.Entry
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
+import java.util.concurrent.TimeUnit
+
 class FTPFileSystem implements IFileSystem<FTPElement> {
 
-     
+
+    static LoadingCache<Entry<FTPConfig, File>, FTPFileFactory> factoryCache = CacheBuilder.newBuilder()
+            .expireAfterAccess(10, TimeUnit.MINUTES).build(
+            new CacheLoader<Entry<FTPConfig, File>, FTPFileFactory>() {
+                @Override
+                FTPFileFactory load(Entry<FTPConfig, File> key) throws Exception {
+                    println key.hashCode()
+                    println "CREATEING FACT " + key
+                    return  new FTPFileFactory(key.a, key.b)
+                }
+            }
+    )
 
     Logger logger;
     FTPConnection connection
@@ -36,7 +52,7 @@ class FTPFileSystem implements IFileSystem<FTPElement> {
 
     FTPFileSystem(FTPConfig config, FTPConnection connection, File directory) {
         this.config = config
-        factory = new FTPFileFactory(config, directory)
+        factory = factoryCache.get(new Entry<FTPConfig, File>(config, directory))
         this.connection = connection
         this.username = connection.getUsername()
         logger = LogManager.getLogger(FTPFileSystem.class)
@@ -74,8 +90,9 @@ class FTPFileSystem implements IFileSystem<FTPElement> {
     @Override
     long getSize(FTPElement file) {
         logger.debug("{} is requesting size for {}", username, file)
-        if (file.isProjectFile()) return file.asProjectFile().size
-        if (file.isTapeFile()) return file.asTapeFile().size
+        if (file.typeProjectFile()) return file.asProjectFile().size
+        println "LOADING SIZE " + file.asTapeFile().size + " for file " + file.hashCode()
+        if (file.typeTapeFile()) return file.asTapeFile().size
         return 0
     }
 
@@ -133,21 +150,22 @@ class FTPFileSystem implements IFileSystem<FTPElement> {
     @Override
     InputStream readFile(FTPElement file, long start) throws IOException {
         logger.debug("{} is reading file {} starting at {}", username, file, start)
-        if (file.isProjectFile()) return file.asProjectFile().read(start)
+        if (file.typeProjectFile()) return file.asProjectFile().read(start)
         throw new IOException("File access not allowed")
     }
 
     @Override
     OutputStream writeFile(FTPElement file, long start) throws IOException {
         logger.debug("{} is writing file {} starting at {}", username, file, start)
-        if (file.isProjectFile()) return file.asProjectFile().write(start)
+        if (file.typeProjectFile()) return file.asProjectFile().write(start)
         throw new IOException("File access not allowed")
     }
 
     @Override
     void mkdirs(FTPElement file) throws IOException {
         logger.debug("{} is creating dir {}", username, file)
-        if (file.isProject()) file.asProject().mkdir()
+        if (file.typeProject()) file.asProject().mkdir()
+            else if (file.typeProjectDirectory()) file.asProjectDirectory().mkdir()
         else throw new IOException("Only projects are allowed")
     }
 
@@ -160,7 +178,7 @@ class FTPFileSystem implements IFileSystem<FTPElement> {
     @Override
     void rename(FTPElement from, FTPElement to) throws IOException {
         logger.debug("{} is requesting rename from {} to {}", username, from, to)
-        if (from.isProject() && to.parent.isTape()) {
+        if (from.typeProject() && to.parent.typeTape()) {
             def project = from.asProject()
             if (!project.locked) {
                 //RUN ASYNC
@@ -192,6 +210,6 @@ class FTPFileSystem implements IFileSystem<FTPElement> {
     @Override
     void finishedFile(FTPElement file) {
         logger.info("{} successfully uploaded file {}", username, file)
-        if (file.isProjectFile()) file.asProjectFile().finished()
+        if (file.typeProjectFile()) file.asProjectFile().finished()
     }
 }

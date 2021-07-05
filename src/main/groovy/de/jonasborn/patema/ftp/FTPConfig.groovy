@@ -30,4 +30,31 @@ class FTPConfig {
         this.username = username
         this.password = password
     }
+
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+
+        FTPConfig ftpConfig = (FTPConfig) o
+
+        if (annoying != ftpConfig.annoying) return false
+        if (blockSize != ftpConfig.blockSize) return false
+        if (compress != ftpConfig.compress) return false
+        if (encrypt != ftpConfig.encrypt) return false
+        if (password != ftpConfig.password) return false
+        if (username != ftpConfig.username) return false
+
+        return true
+    }
+
+    int hashCode() {
+        int result
+        result = (username != null ? username.hashCode() : 0)
+        result = 31 * result + (password != null ? password.hashCode() : 0)
+        result = 31 * result + (encrypt ? 1 : 0)
+        result = 31 * result + (compress ? 1 : 0)
+        result = 31 * result + (annoying ? 1 : 0)
+        result = 31 * result + blockSize
+        return result
+    }
 }
