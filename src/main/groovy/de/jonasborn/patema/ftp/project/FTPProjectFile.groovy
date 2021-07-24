@@ -30,7 +30,6 @@ import java.security.MessageDigest
 class FTPProjectFile extends FTPProjectElement {
 
     File delegate;
-    FTPProject project;
     String title;
     PartedCompressedCryptoFile partedCrypto
     PartedFileOutputStream coutCrypto
@@ -46,8 +45,10 @@ class FTPProjectFile extends FTPProjectElement {
      * @param project
      * @param path
      */
-    FTPProjectFile(FTPProject project, String path) {
-        super(project, path)
+    FTPProjectFile(FTPProject project, FTPElement parent, String path) {
+        super(project, parent, path)
+        assert project != null
+        this.type = Type.PROJECT_FILE
         this.title = path
         this.project = project
         this.delegate = new File(project.delegate, path)

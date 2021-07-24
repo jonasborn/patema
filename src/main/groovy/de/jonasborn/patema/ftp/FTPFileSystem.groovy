@@ -31,6 +31,10 @@ import java.util.concurrent.TimeUnit
 
 class FTPFileSystem implements IFileSystem<FTPElement> {
 
+    /*
+    /PROJECT/PROJECT_DIRECTORY[...]/PROJECT_FILE[...]
+     */
+
 
     static LoadingCache<Entry<FTPConfig, File>, FTPFileFactory> factoryCache = CacheBuilder.newBuilder()
             .expireAfterAccess(10, TimeUnit.MINUTES).build(
@@ -89,9 +93,10 @@ class FTPFileSystem implements IFileSystem<FTPElement> {
 
     @Override
     long getSize(FTPElement file) {
+        println file.type
         logger.debug("{} is requesting size for {}", username, file)
         if (file.typeProjectFile()) return file.asProjectFile().size
-        println "LOADING SIZE " + file.asTapeFile().size + " for file " + file.hashCode()
+        //println "LOADING SIZE " + file.asTapeFile().size + " for file " + file.hashCode()
         if (file.typeTapeFile()) return file.asTapeFile().size
         return 0
     }

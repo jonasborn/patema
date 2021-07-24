@@ -22,6 +22,13 @@ import java.text.StringCharacterIterator
 
 class FileUtils {
 
+    public static List<File> list(File file) {
+        List<File> list = file.listFiles()
+        if (list == null) list = []
+        return list
+    }
+
+
     /*
     From https://stackoverflow.com/a/4888400/9407664
     Created by https://stackoverflow.com/users/1248724/zarathustra

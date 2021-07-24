@@ -18,30 +18,32 @@
 package de.jonasborn.patema.ftp.project
 
 import de.jonasborn.patema.ftp.FTPElement
+import de.jonasborn.patema.util.FileUtils
 
-class FTPProjectDirectory extends FTPProjectElement {
+class FTPProjectDirectory extends FTPProjectElement{
 
-    File delegate;
-    FTPProject project;
-    String path
-
-    FTPProjectDirectory(FTPProject project, String path) {
-        super(project, path)
+    FTPProjectDirectory(FTPProject project, FTPElement parent, String title) {
+        super(project, parent, title)
+        assert title != null
         this.type = Type.PROJECT_DIR
         this.project = project
+        println "CREATED DIRECTORY WITH PATH: " + getPath()
     }
 
+    @Override
+    List<FTPProjectElement> list() {
+        if (!delegate.exists()) return []
+        return FileUtils.list(delegate).findAll { it.isDirectory() }.collect {
+            if (FTPProject.isLogicalDirectory(it)) return new FTPProjectDirectory(project, this, it.name)
+            else return new FTPProjectFile(project, this, it.name)
+        }
+    }
 
     @Override
     boolean exists() {
         new File(path).exists()
     }
 
-
-    @Override
-    String getTitle() {
-        return path.split("/").last()
-    }
 
     @Override
     void delete() {

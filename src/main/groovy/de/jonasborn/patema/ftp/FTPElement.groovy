@@ -51,7 +51,7 @@ abstract class FTPElement {
     }
 
     boolean isDirectory() {
-        return type == ROOT || type == PROJECT || type == TAPE
+        return type == ROOT || type == PROJECT || type == TAPE || type == PROJECT_DIR
     }
 
     public boolean typeRoot() {

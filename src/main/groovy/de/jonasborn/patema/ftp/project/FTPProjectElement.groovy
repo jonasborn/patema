@@ -17,22 +17,59 @@
 
 package de.jonasborn.patema.ftp.project
 
+import de.jonasborn.patema.ftp.FTPDirectory
 import de.jonasborn.patema.ftp.FTPElement
 
-class FTPProjectElement extends FTPElement {
+class FTPProjectElement extends FTPDirectory<FTPProjectElement> {
+
+    public static FTPElement create(FTPProject project, String path) {
+        def file = new File(project.delegate, path)
+        def dir = FTPProject.isLogicalDirectory(file);
+        def parts = path.split("/")
+
+        println "!!! - - - UNTESTED FUNCTION"
+        def current = project
+        for (i in 0..<parts.length) {
+            println "ELEMENT IN LOOP IS " + parts[i]
+            println "IS END? " + (i == parts.length -1)
+            if (i == parts.length -1) {
+                println "END!, CREATING " + parts[i]
+                if (dir) current = project.root.factory.projectDir(project, current, parts[i])
+                    else current = project.root.factory.projectFile(project, current, parts[i])
+            } else {
+                println "RUNNING, CREATING DIR " + parts[i]
+                current = project.root.factory.projectDir(project, current, parts[i])
+            }
+        }
+        return current
+    }
 
     File delegate
-    FTPProject parent
+    FTPProject project
+    FTPElement parent
     String title
 
-    FTPProjectElement(FTPProject project, String title) {
+    FTPProjectElement(FTPProject project, FTPElement parent, String title) {
         super(Type.PROJECT_ELEMENT)
-        this.delegate = new File(project.delegate, title)
+        assert project != null
+        assert  parent != null
+        assert title != null
+        this.project = project
+        this.parent = parent
+        this.title = title
+        this.delegate = new File(project.delegate.parentFile, getPath())
     }
 
     @Override
     String getPath() {
-        return null
+        def current = this
+        def path = ""
+        while (!(current instanceof FTPProject)) {
+            path = current.title + "/" + path
+            current = current.getParent()
+        }
+        path = "/" + (current as FTPProject).name + "/" + path
+        return path
     }
 
     @Override
@@ -41,12 +78,22 @@ class FTPProjectElement extends FTPElement {
     }
 
     @Override
-    String getTitle() {
-        return delegate.getName()
+    boolean isFile() {
+        return !FTPProject.isLogicalDirectory(delegate)
+    }
+
+    @Override
+    boolean isDirectory() {
+        return FTPProject.isLogicalDirectory(delegate)
     }
 
     @Override
     void delete() {
         throw new IOException("Not implemented yet")
+    }
+
+    @Override
+    List<FTPProjectElement> list() {
+        return null
     }
 }

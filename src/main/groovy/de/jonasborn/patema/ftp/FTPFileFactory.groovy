@@ -21,6 +21,8 @@ import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import com.google.common.cache.LoadingCache
 import de.jonasborn.patema.ftp.project.FTPProject
+import de.jonasborn.patema.ftp.project.FTPProjectDirectory
+import de.jonasborn.patema.ftp.project.FTPProjectElement
 import de.jonasborn.patema.ftp.project.FTPProjectFile
 import de.jonasborn.patema.ftp.tape.FTPTape
 import de.jonasborn.patema.ftp.tape.FTPTapeFile
@@ -81,8 +83,16 @@ class FTPFileFactory {
         return tapeCache.get(path)
     }
 
-    public FTPProjectFile projectFile(FTPProject project, String title) {
-        return new FTPProjectFile(project, title)
+    public FTPProjectFile projectFile(FTPProject project, FTPElement parent, String title) {
+        return new FTPProjectFile(project, parent, title)
+    }
+
+    public FTPProjectDirectory projectDir(FTPProject project, FTPElement parent, String title) {
+        return new FTPProjectDirectory(project, parent, title)
+    }
+
+    public FTPProjectElement projectElement(FTPProject project, FTPElement parent, String title) {
+        return new FTPProjectDirectory(project, parent, title)
     }
 
     public FTPTapeFile tapeFile(FTPTape tape, String title) {
@@ -101,9 +111,18 @@ class FTPFileFactory {
             return project("project-" + parts[1])
         }
 
-        if (parts.length == 3) {
+        // /PROJECT/DIRORFILE/DIRORFILE
+
+
+
+        if (parts.length > 2) {
             if (parts[1].startsWith("project")) {
-                return projectFile(project(parts[1]), parts[2].replace("/", "."))
+                def start = project(parts[1])
+                def p = ""
+                for (i in 2..<parts.length) {
+                    p = parts[i] + "/" + p
+                }
+                return FTPProjectElement.create(start, p)
             }
             if (parts[1].startsWith("tape")) {
                 return tapeFile(tape(parts[1]), parts[2].replace("/", "."))

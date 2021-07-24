@@ -17,12 +17,10 @@
 
 package de.jonasborn.patema.ftp.project
 
-
 import de.jonasborn.patema.ftp.FTPDirectory
 import de.jonasborn.patema.ftp.FTPElement
 import de.jonasborn.patema.ftp.FTPRoot
 import de.jonasborn.patema.ftp.tape.FTPTape
-
 import de.jonasborn.patema.register.Register
 import de.jonasborn.patema.register.Registers
 import de.jonasborn.patema.register.V1Register
@@ -84,8 +82,7 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
 
     @Override
     String getPath() {
-
-        return "/" + getTitle()
+        return "/" + name //getTitle()
     }
 
     @Override
@@ -110,7 +107,7 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
     }
 
     public long getSize() {
-        Long size = list().collect { it.size }.sum() as Long
+        Long size = list().findAll {it.isFile()}.collect { it.size }.sum() as Long
         if (size == null) return 0
         return size
     }
@@ -128,11 +125,26 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
         delegate.deleteDir()
     }
 
-    public List<FTPProjectFile> list() {
+    /**
+     * Used to determine if a directory is holding a parted file or not
+     * @param file A file, should be a directory
+     * @return True if file is a real directory
+     */
+    public static boolean isLogicalDirectory(File file) {
+        if (!file.isDirectory()) return false
+        def list = FileUtils.list(file)
+        def entry = list.find { it.name.contains(".ptma") }
+        if (entry == null) return true
+        return false
+    }
+
+    public List<FTPProjectElement> list() {
         if (!delegate.exists() || !accessible) return []
-        delegate.listFiles().findAll {it.isDirectory()}.collect {
-            return new FTPProjectFile(this, it.name)
+        return FileUtils.list(delegate).findAll { it.isDirectory() }.collect {
+            if (isLogicalDirectory(it)) return new FTPProjectDirectory(this, this, it.name)
+            else return new FTPProjectFile(this, this, it.name)
         }
+
     }
 
     /*
@@ -142,7 +154,7 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
 
     public void registerFile(FTPProjectFile file) {
         prepare()
-        def parts = new LinkedList(file.partedRaw.listFiles().collect {it.length()})
+        def parts = new LinkedList(file.partedRaw.listFiles().collect { it.length() })
         V1RegisterEntry entry = new V1RegisterEntry(
                 file.title, register.getEntries().size(), file.partedCrypto.hash(), file.getSize(), parts, file.partedCrypto.getSizeOnMedia(), root.config.password
         )
@@ -152,7 +164,7 @@ public class FTPProject extends FTPDirectory<FTPProjectFile> {
 
     public void unregisterFile(FTPProjectFile file) {
         prepare()
-        def parts = file.partedRaw.listFiles().collect {it.length()}
+        def parts = file.partedRaw.listFiles().collect { it.length() }
         V1RegisterEntry entry = new V1RegisterEntry(
                 file.title, register.getEntries().size(), file.partedCrypto.hash(), file.getSize(), parts, file.partedCrypto.getSizeOnMedia(), root.config.password
         )

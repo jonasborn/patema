@@ -53,8 +53,9 @@ class Main {
         File root = new File("root");
         def auth = new FTPAuth(root);
         FTPServer server = new FTPServer(auth);
-        logger.info("Starting ftp server using port {}", server.port)
-        server.listenSync(Parser.getInteger("port"));
+        logger.info("Starting ftp server using port {}", Parser.getInteger("port"))
+        server.listenSync(Parser.getInteger("port"))
+
 
     }
 }
