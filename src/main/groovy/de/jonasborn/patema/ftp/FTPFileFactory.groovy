@@ -120,7 +120,7 @@ class FTPFileFactory {
                 def start = project(parts[1])
                 def p = ""
                 for (i in 2..<parts.length) {
-                    p = parts[i] + "/" + p
+                    p = p + "/" + parts[i]
                 }
                 return FTPProjectElement.create(start, p)
             }

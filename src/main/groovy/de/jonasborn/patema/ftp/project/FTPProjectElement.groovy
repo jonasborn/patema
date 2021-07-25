@@ -24,6 +24,7 @@ class FTPProjectElement extends FTPDirectory<FTPProjectElement> {
 
     public static FTPElement create(FTPProject project, String path) {
         def file = new File(project.delegate, path)
+        println "FILE: " + file
         def dir = FTPProject.isLogicalDirectory(file);
         def parts = path.split("/")
 
@@ -68,7 +69,7 @@ class FTPProjectElement extends FTPDirectory<FTPProjectElement> {
             path = current.title + "/" + path
             current = current.getParent()
         }
-        path = "/" + (current as FTPProject).name + "/" + path
+        path = "/" + (current as FTPProject).name + path
         return path
     }
 
