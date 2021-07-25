@@ -20,7 +20,13 @@ I'm not a security expert and therefore can not guarantee anything.
 ---
 
 ## Current status
-### Encryption
+
+### 26.06.21 Directories
+As it seems, I forgot to plan any recursive file access - so there is no folder support at the moment.
+This might not be the best idea, therefore I added a more unstable and untested implementation.
+Currently, only projects are supported, the tape support is much easier will join the party a bit later.
+
+### 06.05.21 Encryption
 Currently, the project is using **rockaport/alice** for encrypting the registers.
 The register contains the iv and salt used for all files and provides the encryption/decryption passwords.
 The file encryption is a customized AES ECB solution, using an IV based on the chunk position and the initial iv from
